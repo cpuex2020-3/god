@@ -1,0 +1,161 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include "instruction.h"
+#include "data.h"
+
+signed char execute(struct instruction instruction){
+  if(instruction.opcode==0b0000000){
+    printf("\nhalt\n");
+    pc = pc+0;
+  }
+  // LOAD
+  else if(instruction.opcode==0b0000011){
+    int32_t mem_address = load_regster(instruction.rs1_index)+instruction.imm;
+    int mem_index = index_memory(mem_address);
+    if(mem_index<0) return -1;
+    int32_t value = load_memory(mem_index);
+    // lw
+    if(instruction.funct3==0b010){
+    }
+    else return -1;
+    if(instruction.rd_index!=0) store_register(instruction.rd_index, value);
+    pc = pc+4;
+  }
+  // STORE
+  else if(instruction.opcode==0b0100011){
+    int32_t mem_address = load_regster(instruction.rs1_index)+instruction.imm;
+    int mem_index = index_memory(mem_address);
+    if(mem_index<0) return -1;
+    int32_t value = load_regster(instruction.rs2_index);
+    // sw
+    if(instruction.funct3==0b010){
+    }
+    else return -1;
+    store_memory(mem_index, value);
+    pc = pc+4;
+  }
+  // OP
+  else if(instruction.opcode==0b0110011){
+    int32_t value = 0;
+    int32_t rs1 = load_regster(instruction.rs1_index);
+    int32_t rs2 = load_regster(instruction.rs2_index);
+    if(instruction.funct3==0b000){
+      // add
+      if(instruction.funct7==0b0000000){
+        value = rs1+rs2;
+      }
+      // sub
+      else if(instruction.funct7==0b0100000){
+        value = rs1-rs2;
+      }
+      else return -1;
+    }
+    // xor
+    else if(instruction.funct3==0b100){
+      value = rs1^rs2;
+    }
+    // or
+    else if(instruction.funct3==0b110){
+      value = rs1|rs2;
+    }
+    // and
+    else if(instruction.funct3==0b111){
+      value = rs1&rs2;
+    }
+    // slt
+    else if(instruction.funct3==0b010){
+      if(rs1<rs2) value = 1;
+    }
+    else return -1;
+    if(instruction.rd_index!=0) store_register(instruction.rd_index, value);
+    pc = pc+4;
+  }
+  // OP-IMM
+  else if(instruction.opcode==0b0010011){
+    int32_t value = 0;
+    int32_t rs1 = load_regster(instruction.rs1_index);
+    // addi
+    if(instruction.funct3==0b000){
+      value = rs1+instruction.imm;
+    }
+    // xori
+    else if(instruction.funct3==0b100){
+      value = rs1^instruction.imm;
+    }
+    // ori
+    else if(instruction.funct3==0b110){
+      value = rs1|instruction.imm;
+    }
+    // andi
+    else if(instruction.funct3==0b111){
+      value = rs1&instruction.imm;
+    }
+    // slti
+    else if(instruction.funct3==0b010){
+      if(rs1<instruction.imm) value = 1;
+    }
+    else return -1;
+    if(instruction.rd_index!=0) store_register(instruction.rd_index, value);
+    pc = pc+4;
+  }
+  // BRANCH
+  else if(instruction.opcode==0b1100011){
+    int32_t offset = 4;
+    int32_t rs1 = load_regster(instruction.rs1_index);
+    int32_t rs2 = load_regster(instruction.rs2_index);
+    // beq
+    if(instruction.funct3==0b000){
+      if(rs1==rs2) offset = instruction.imm;
+    }
+    // bne
+    else if(instruction.funct3==0b001){
+      if(rs1!=rs2) offset = instruction.imm;
+    }
+    // blt
+    else if(instruction.funct3==0b100){
+      if(rs1<rs2) offset = instruction.imm;
+    }
+    // bge
+    else if(instruction.funct3==0b100){
+      if(rs1>=rs2) offset = instruction.imm;
+    }
+    else return -1;
+    pc = pc+offset;
+  }
+  // lui
+  else if(instruction.opcode==0b0110111){
+    int32_t value = instruction.imm<<12;
+    if(instruction.rd_index!=0) store_register(instruction.rd_index, value);
+    pc = pc+4;
+  }
+  // auipc
+  else if(instruction.opcode==0b0010111){
+    int32_t value = instruction.imm<<12;
+    if(instruction.rd_index!=0) store_register(instruction.rd_index, pc+value);
+    pc = pc+4;
+  }
+  // jal
+  else if(instruction.opcode==0b1101111){
+    if(instruction.rd_index!=0) store_register(instruction.rd_index, pc+4);
+    pc = pc+instruction.imm;
+  }
+  // jalr
+  else if(instruction.opcode==0b1100111){
+    if(instruction.funct3==0b000){
+      if(instruction.rd_index!=0) store_register(instruction.rd_index, pc+4);
+      pc = load_regster(instruction.rs1_index)+instruction.imm;
+    }
+    else return -1;
+  }
+  else return -1;
+  return 0;
+};
+
+signed char step(){
+  show_registers();
+  int i = index_text(pc);
+  if(i<0) return -1;
+  struct instruction instruction = load_text(i);
+  if(execute(instruction)<0) return -1;
+  return 0;
+}
