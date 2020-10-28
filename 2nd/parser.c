@@ -89,12 +89,15 @@ signed char operands_ls(char (*rand0)[256], char (*rand1)[256], char (*rand2)[25
   return 0;
 }
 
-/* immidiate枠にはimm[11:0](基本はこれ),shamt[5:0](shift系),
-                 imm[31:12](lui,aupci),
-                 imm[12:1](branch系),imm[20:1](jal)の5種類があるらしい。
-   次の関数では、bit = 11, 5, 19, 12, 20 で場合分けしています。1048576 は 1<<20 の値。*/
+/* immidiate枠には次の6種類がある。
+          imm[11:0]  (基本はこれ),
+          shamt[4:0] (shift系),
+          imm[31:12] (lui,aupci),
+          imm[12:1]  (branch系),
+          imm[20:1]  (jal),
+          imm[31:0]  (li)
+   次の関数では、bit = 11, 4, 19, 12, 20, 31 で場合分けしています。1048576 は 1<<20 の値。*/
 int32_t immediate(char *imm, int32_t bit){
-  int32_t up_bd = 1 << bit;
   int i = 0, j = 0;
   if(imm[0]=='\0') return 1048576;
   if(imm[0]=='-') j++;
@@ -103,8 +106,15 @@ int32_t immediate(char *imm, int32_t bit){
   }
   if(i==j) return 1048576;
   int32_t value = atoi(imm);
-  if(value<-1*up_bd||up_bd<=value) return 1048576;
-  if((bit==12||bit==20)&&value%2==1) return 1048576;
+
+  if(bit==4){
+    if(value<0||32<=value) return 1048576;
+  }
+  else if(bit!=31){
+    int32_t up_bd = 1 << bit;
+    if(value<-1*up_bd||up_bd<=value) return 1048576;
+    if((bit==12||bit==20)&&value%2==1) return 1048576;
+  }
   return value;
 }
 
@@ -129,7 +139,12 @@ signed char directive(char t[256]){
     /* 外部関数実装時に書くか */
   }
   else if(eqlstr(t,".word")==0){
-    /* 書くだけ。はよ書け。 */
+    /* 書くだけ。はよ書け。これ書かな la 実装しても使われへん。*/
+    /*
+    char imm[256];
+    signed char i = operand(&imm);
+    while()
+    */
   }
   return 0;
 }
@@ -162,6 +177,96 @@ signed char instruction(char t[256]){
     int i = index_text(pc+text_offset);
     if(i<0||type_S.rs1_index<0||type_S.rs2_index<0||type_S.imm==1048576) return -1;
     store_text(i,type_S);
+    text_offset = text_offset+4;
+  }
+  else if(eqlstr(t,"sll")==0){
+    char rd[256],rs1[256],rs2[256];
+    if(operand(&rd)!=0||operand(&rs1)!=0||operand(&rs2)!=1) return -1;
+    struct instruction type_R;
+    type_R.opcode = 0b0110011;
+    type_R.funct3 = 0b001;
+    type_R.funct7 = 0b0000000;
+    type_R.rd_index = index_register(rd);
+    type_R.rs1_index = index_register(rs1);
+    type_R.rs2_index = index_register(rs2);
+    int i = index_text(pc+text_offset);
+    if(i<0||type_R.rd_index<0||type_R.rs1_index<0||type_R.rs2_index<0) return -1;
+    store_text(i,type_R);
+    text_offset = text_offset+4;
+  }
+  else if(eqlstr(t,"slli")==0){
+    char rd[256],rs1[256],imm[256];
+    if(operand(&rd)!=0||operand(&rs1)!=0||operand(&imm)!=1) return -1;
+    struct instruction type_I;
+    type_I.opcode = 0b0010011;
+    type_I.funct3 = 0b001;
+    type_I.funct7 = 0b0000000;
+    type_I.rd_index = index_register(rd);
+    type_I.rs1_index = index_register(rs1);
+    type_I.imm = immediate(imm,4);
+    int i = index_text(pc+text_offset);
+    if(i<0||type_I.rd_index<0||type_I.rs1_index<0||type_I.imm==1048576) return -1;
+    store_text(i,type_I);
+    text_offset = text_offset+4;
+  }
+  else if(eqlstr(t,"srl")==0){
+    char rd[256],rs1[256],rs2[256];
+    if(operand(&rd)!=0||operand(&rs1)!=0||operand(&rs2)!=1) return -1;
+    struct instruction type_R;
+    type_R.opcode = 0b0110011;
+    type_R.funct3 = 0b101;
+    type_R.funct7 = 0b0000000;
+    type_R.rd_index = index_register(rd);
+    type_R.rs1_index = index_register(rs1);
+    type_R.rs2_index = index_register(rs2);
+    int i = index_text(pc+text_offset);
+    if(i<0||type_R.rd_index<0||type_R.rs1_index<0||type_R.rs2_index<0) return -1;
+    store_text(i,type_R);
+    text_offset = text_offset+4;
+  }
+  else if(eqlstr(t,"srli")==0){
+    char rd[256],rs1[256],imm[256];
+    if(operand(&rd)!=0||operand(&rs1)!=0||operand(&imm)!=1) return -1;
+    struct instruction type_I;
+    type_I.opcode = 0b0010011;
+    type_I.funct3 = 0b101;
+    type_I.funct7 = 0b0000000;
+    type_I.rd_index = index_register(rd);
+    type_I.rs1_index = index_register(rs1);
+    type_I.imm = immediate(imm,4);
+    int i = index_text(pc+text_offset);
+    if(i<0||type_I.rd_index<0||type_I.rs1_index<0||type_I.imm==1048576) return -1;
+    store_text(i,type_I);
+    text_offset = text_offset+4;
+  }
+  else if(eqlstr(t,"sra")==0){
+    char rd[256],rs1[256],rs2[256];
+    if(operand(&rd)!=0||operand(&rs1)!=0||operand(&rs2)!=1) return -1;
+    struct instruction type_R;
+    type_R.opcode = 0b0110011;
+    type_R.funct3 = 0b101;
+    type_R.funct7 = 0b0100000;
+    type_R.rd_index = index_register(rd);
+    type_R.rs1_index = index_register(rs1);
+    type_R.rs2_index = index_register(rs2);
+    int i = index_text(pc+text_offset);
+    if(i<0||type_R.rd_index<0||type_R.rs1_index<0||type_R.rs2_index<0) return -1;
+    store_text(i,type_R);
+    text_offset = text_offset+4;
+  }
+  else if(eqlstr(t,"srai")==0){
+    char rd[256],rs1[256],imm[256];
+    if(operand(&rd)!=0||operand(&rs1)!=0||operand(&imm)!=1) return -1;
+    struct instruction type_I;
+    type_I.opcode = 0b0010011;
+    type_I.funct3 = 0b101;
+    type_I.funct7 = 0b0100000;
+    type_I.rd_index = index_register(rd);
+    type_I.rs1_index = index_register(rs1);
+    type_I.imm = immediate(imm,4);
+    int i = index_text(pc+text_offset);
+    if(i<0||type_I.rd_index<0||type_I.rs1_index<0||type_I.imm==1048576) return -1;
+    store_text(i,type_I);
     text_offset = text_offset+4;
   }
   else if(eqlstr(t,"add")==0){
@@ -348,6 +453,35 @@ signed char instruction(char t[256]){
     store_text(i,type_I);
     text_offset = text_offset+4;
   }
+  else if(eqlstr(t,"sltu")==0){
+    char rd[256],rs1[256],rs2[256];
+    if(operand(&rd)!=0||operand(&rs1)!=0||operand(&rs2)!=1) return -1;
+    struct instruction type_R;
+    type_R.opcode = 0b0110011;
+    type_R.funct3 = 0b011;
+    type_R.funct7 = 0b0000000;
+    type_R.rd_index = index_register(rd);
+    type_R.rs1_index = index_register(rs1);
+    type_R.rs2_index = index_register(rs2);
+    int i = index_text(pc+text_offset);
+    if(i<0||type_R.rd_index<0||type_R.rs1_index<0||type_R.rs2_index<0) return -1;
+    store_text(i,type_R);
+    text_offset = text_offset+4;
+  }
+  else if(eqlstr(t,"sltiu")==0){
+    char rd[256],rs1[256],imm[256];
+    if(operand(&rd)!=0||operand(&rs1)!=0||operand(&imm)!=1) return -1;
+    struct instruction type_I;
+    type_I.opcode = 0b0010011;
+    type_I.funct3 = 0b011;
+    type_I.rd_index = index_register(rd);
+    type_I.rs1_index = index_register(rs1);
+    type_I.imm = immediate(imm,11);
+    int i = index_text(pc+text_offset);
+    if(i<0||type_I.rd_index<0||type_I.rs1_index<0||type_I.imm==1048576) return -1;
+    store_text(i,type_I);
+    text_offset = text_offset+4;
+  }
   else if(eqlstr(t,"beq")==0){
     char rs1[256],rs2[256],imm[256];
     if(operand(&rs1)!=0||operand(&rs2)!=0||operand(&imm)!=1) return -1;
@@ -396,6 +530,34 @@ signed char instruction(char t[256]){
     struct instruction type_B;
     type_B.opcode = 0b1100011;
     type_B.funct3 = 0b101;
+    type_B.rs1_index = index_register(rs1);
+    type_B.rs2_index = index_register(rs2);
+    type_B.imm = immediate(imm,12);
+    int i = index_text(pc+text_offset);
+    if(i<0||type_B.rs1_index<0||type_B.rs2_index<0||type_B.imm==1048576) return -1;
+    store_text(i,type_B);
+    text_offset = text_offset+4;
+  }
+  else if(eqlstr(t,"bltu")==0){
+    char rs1[256],rs2[256],imm[256];
+    if(operand(&rs1)!=0||operand(&rs2)!=0||operand(&imm)!=1) return -1;
+    struct instruction type_B;
+    type_B.opcode = 0b1100011;
+    type_B.funct3 = 0b110;
+    type_B.rs1_index = index_register(rs1);
+    type_B.rs2_index = index_register(rs2);
+    type_B.imm = immediate(imm,12);
+    int i = index_text(pc+text_offset);
+    if(i<0||type_B.rs1_index<0||type_B.rs2_index<0||type_B.imm==1048576) return -1;
+    store_text(i,type_B);
+    text_offset = text_offset+4;
+  }
+  else if(eqlstr(t,"bgeu")==0){
+    char rs1[256],rs2[256],imm[256];
+    if(operand(&rs1)!=0||operand(&rs2)!=0||operand(&imm)!=1) return -1;
+    struct instruction type_B;
+    type_B.opcode = 0b1100011;
+    type_B.funct3 = 0b111;
     type_B.rs1_index = index_register(rs1);
     type_B.rs2_index = index_register(rs2);
     type_B.imm = immediate(imm,12);
@@ -473,7 +635,78 @@ signed char instruction(char t[256]){
     store_text(i,type_I);
     text_offset = text_offset+4;
   }
+  else if(eqlstr(t,"li")==0){
+    char rd[256],imm[256];
+    if(operand(&rd)!=0||operand(&imm)!=1) return -1;
+    int32_t imm_li = immediate(imm,31);
+    // 関数immidiateのエラーコードは1048576であることに注意。
+    if(eqlstr(imm,"1048576")!=0&&imm_li==1048576) return -1;
+    // imm_liが12bitで収まるなら addi rd, zero, imm_li。
+    if(-2048<=imm_li&&imm_li<2048){
+      struct instruction type_I;
+      type_I.opcode = 0b0010011;
+      type_I.funct3 = 0b000;
+      type_I.rd_index = index_register(rd);
+      type_I.rs1_index = index_register("zero");
+      type_I.imm = imm_li;
+      int i = index_text(pc+text_offset);
+      if(i<0||type_I.rd_index<0) return -1;
+      store_text(i,type_I);
+      text_offset = text_offset+4;
+    }
+    // 収まらないならlui rd, (imm_li>>12) -> addi rd, rd, imm_li-((imm_li>>12)<<12)。
+    else{
+      struct instruction type_U;
+      type_U.opcode = 0b0110111;
+      type_U.rd_index = index_register(rd);
+      type_U.imm = imm_li>>12;
+      int i = index_text(pc+text_offset);
+      if(i<0||type_U.rd_index<0) return -1;
+      store_text(i,type_U);
+      text_offset = text_offset+4;
+      struct instruction type_I;
+      type_I.opcode = 0b0010011;
+      type_I.funct3 = 0b000;
+      type_I.rd_index = index_register(rd);
+      type_I.rs1_index = index_register(rd);
+      type_I.imm = imm_li-((imm_li>>12)<<12);
+      i = index_text(pc+text_offset);
+      if(i<0||type_I.rd_index<0) return -1;
+      store_text(i,type_I);
+      text_offset = text_offset+4;
+    }
+  }
+  // mv rd, rs1 -> addi rd, rs1, 0
+  else if(eqlstr(t,"mv")==0){
+    char rd[256],rs1[256];
+    if(operand(&rd)!=0||operand(&rs1)!=1) return -1;
+    struct instruction type_I;
+    type_I.opcode = 0b0010011;
+    type_I.funct3 = 0b000;
+    type_I.rd_index = index_register(rd);
+    type_I.rs1_index = index_register(rs1);
+    type_I.imm = 0;
+    int i = index_text(pc+text_offset);
+    if(i<0||type_I.rd_index<0||type_I.rs1_index<0) return -1;
+    store_text(i,type_I);
+    text_offset = text_offset+4;
+  }
+  // ret -> jalr zero, ra, 0
+  else if(eqlstr(t,"ret")==0){
+    if(s[i_s]!='\0') return -1;
+    struct instruction type_I;
+    type_I.opcode = 0b1100111;
+    type_I.funct3 = 0b000;
+    type_I.rd_index = index_register("zero");
+    type_I.rs1_index = index_register("ra");
+    type_I.imm = 0;
+    int i = index_text(pc+text_offset);
+    if(i<0) return -1;
+    store_text(i,type_I);
+    text_offset = text_offset+4;
+  }
   else if(eqlstr(t,"halt")==0){
+    if(s[i_s]!='\0') return -1;
     struct instruction halt;
     halt.opcode = 0b0000000;
     int i = index_text(pc+text_offset);
@@ -518,24 +751,29 @@ signed char parse(char *file_name){
     t[i_t] = '\0';
     white_skip();
 
+    /* parse errorが出たときはこれを使ってどこでerror吐いてるか確認すると幸せになれるかも。*/
+    // printf("%s\n", t);
     /* 切り出した先頭を見て、label:, .uouo, instruction に場合分け */
     if(t[0]=='\0'){
     }
     else if(t[i_t-1]==':'){
       if(labeling(t)<0){
         fclose(fp);
+        delete_list(labels);
         return -1;
       }
     }
     else if(t[0]=='.'){
       if(directive(t)<0){
         fclose(fp);
+        delete_list(labels);
         return -1;
       }
     }
     else{
       if(instruction(t)<0){
         fclose(fp);
+        delete_list(labels);
         return -1;
       }
     }
@@ -543,16 +781,27 @@ signed char parse(char *file_name){
     i_s = 0;
   }
 
-  fclose(fp);
-  /* 末尾にもhaltを足します。 */
+  /* 末尾にもhaltを足します。*/
+  /* jalr zero, ra, 0にした方が行儀が良さそうだけど、こっちの方が便利なので。*/
   struct instruction halt;
   halt.opcode = 0b0000000;
   int i = index_text(pc+text_offset);
-  if(i<0) return -1;
+  if(i<0){
+    fclose(fp);
+    delete_list(labels);
+    return -1;
+  }
+
   /* mainから実行を始めます。 */
   int32_t main = search_list(labels,"main");
-  if(main<0) return -1;
-  delete_list(labels);
+  if(main<0){
+    fclose(fp);
+    delete_list(labels);
+    return -1;
+  }
   pc = pc + main;
+
+  fclose(fp);
+  delete_list(labels);
   return 0;
 }

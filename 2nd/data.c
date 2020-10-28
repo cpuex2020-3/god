@@ -9,7 +9,7 @@ char *abi_names[34] = {"zero","ra","sp","gp","tp","t0","t1","t2","s0/fp","s1","a
 
 int size_memory = 0; // 各領域のword数 = 配列のサイズ
 struct instruction *text_memory = NULL;  // text領域, 実行時はread only。
-int32_t *rest_memory[3] = {NULL};  // {data,heap,stack}
+int32_t *rest_memory[3] = {NULL};  // {data,heap,stack} のイメージ。
 
 void show_registers(){
   for (size_t i=0; i<32; i++){
@@ -25,19 +25,19 @@ void show_registers(){
 signed char init_data(int32_t size){
   size_memory = size;
   text_memory = (struct instruction *)malloc(sizeof(struct instruction)*size);
-  for (size_t i=0; i<3; i++){
-    rest_memory[i] = (int32_t *)malloc(sizeof(int32_t)*size);
-  }
   if(text_memory==NULL){
     return -1;
+  }
+  for (size_t i=0; i<3; i++){
+    rest_memory[i] = (int32_t *)malloc(sizeof(int32_t)*size);
   }
   for (size_t i=0; i<3; i++){
     if(rest_memory[i]==NULL){
       return -1;
     }
   }
-  registers[2] = (size_memory*4-1)*4; // sp = stack領域の末尾
-  registers[3] = (size_memory)*4;     // gp = data領域の先頭、本来は真ん中らしい。
+  registers[2] = (size_memory*3)*4; // sp = stack領域の先頭。
+  registers[3] = (size_memory)*4;   // gp = data領域の先頭、本来は真ん中らしい。
   return 0;
 }
 

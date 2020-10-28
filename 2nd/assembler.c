@@ -46,7 +46,13 @@ signed char binary(struct instruction instruction){
   }
   // OP-IMM Fmt:I
   else if(instruction.opcode==0b0010011){
-    print_uo(instruction.imm, 12);
+    if(instruction.funct3==001||instruction.funct3==101){
+      print_uo(instruction.funct7, 7);
+      print_uo(instruction.imm, 5);
+    }
+    else{
+      print_uo(instruction.imm, 12);
+    }
     print_uo(instruction.rs1_index, 5);
     print_uo(instruction.funct3, 3);
     print_uo(instruction.rd_index,5);

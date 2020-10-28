@@ -39,7 +39,25 @@ signed char execute(struct instruction instruction){
     int32_t value = 0;
     int32_t rs1 = load_regster(instruction.rs1_index);
     int32_t rs2 = load_regster(instruction.rs2_index);
-    if(instruction.funct3==0b000){
+    // sll
+    if(instruction.funct3==0b001){
+      rs2 = rs2&31;
+      value = rs1<<rs2;
+    }
+    else if(instruction.funct3==0b101){
+      // srl
+      if(instruction.funct7==0b0000000){
+        rs2 = rs2&31;
+        value = ((uint32_t)rs1)>>rs2;
+      }
+      // sra
+      else if(instruction.funct7==0b0100000){
+        rs2 = rs2&31;
+        value = rs1>>rs2;
+      }
+      else return -1;
+    }
+    else if(instruction.funct3==0b000){
       // add
       if(instruction.funct7==0b0000000){
         value = rs1+rs2;
@@ -66,6 +84,10 @@ signed char execute(struct instruction instruction){
     else if(instruction.funct3==0b010){
       if(rs1<rs2) value = 1;
     }
+    // sltu
+    else if(instruction.funct3==0b011){
+      if((uint32_t)rs1<(uint32_t)rs2) value = 1;
+    }
     else return -1;
     if(instruction.rd_index!=0) store_register(instruction.rd_index, value);
     pc = pc+4;
@@ -74,8 +96,23 @@ signed char execute(struct instruction instruction){
   else if(instruction.opcode==0b0010011){
     int32_t value = 0;
     int32_t rs1 = load_regster(instruction.rs1_index);
+    // slli
+    if(instruction.funct3==0b001){
+      value = rs1<<instruction.imm;
+    }
+    else if(instruction.funct3==0b101){
+      // srli
+      if(instruction.funct7==0b0000000){
+        value = ((uint32_t)rs1)>>instruction.imm;
+      }
+      // srai
+      else if(instruction.funct7==0b0100000){
+        value = rs1>>instruction.imm;
+      }
+      else return -1;
+    }
     // addi
-    if(instruction.funct3==0b000){
+    else if(instruction.funct3==0b000){
       value = rs1+instruction.imm;
     }
     // xori
@@ -93,6 +130,10 @@ signed char execute(struct instruction instruction){
     // slti
     else if(instruction.funct3==0b010){
       if(rs1<instruction.imm) value = 1;
+    }
+    // sltiu
+    else if(instruction.funct3==0b011){
+      if((uint32_t)rs1<(uint32_t)instruction.imm) value = 1;
     }
     else return -1;
     if(instruction.rd_index!=0) store_register(instruction.rd_index, value);
@@ -116,8 +157,16 @@ signed char execute(struct instruction instruction){
       if(rs1<rs2) offset = instruction.imm;
     }
     // bge
-    else if(instruction.funct3==0b100){
+    else if(instruction.funct3==0b101){
       if(rs1>=rs2) offset = instruction.imm;
+    }
+    // bltu
+    else if(instruction.funct3==0b110){
+      if((uint32_t)rs1<(uint32_t)rs2) offset = instruction.imm;
+    }
+    // bgeu
+    else if(instruction.funct3==0b111){
+      if((uint32_t)rs1>=(uint32_t)rs2) offset = instruction.imm;
     }
     else return -1;
     pc = pc+offset;

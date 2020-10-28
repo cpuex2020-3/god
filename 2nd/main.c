@@ -11,22 +11,26 @@
 int main(int argc, char *argv[]){
   if(init_data(size_memory)<0){
     printf("memory allocation error\n");
+    free_memory();
     return 0;
   }
 
   if(parse(argv[1])<0){
     printf("parse error\n");
+    free_memory();
     return 0;
   }
 
   if(argc>2){
     if(assemble(argv[2])<0){
       printf("assemble error\n");
+      free_memory();
       return 0;
     }
     if(argc==4){
       if(post_parser(argv[3])<0){
         printf("assembly error\n");
+        free_memory();
         return 0;
       }
     }
@@ -39,6 +43,7 @@ int main(int argc, char *argv[]){
       c = getchar();
       if(step()<0){
         printf("execution error\n");
+        free_memory();
         return 0;
       }
     }

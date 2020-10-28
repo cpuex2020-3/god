@@ -1,4 +1,4 @@
-# 特に意味もなければ呼出規約すら守ってないテストプログラム
+# 特に意味もなければ呼出規約すら守ってないテスト用のプログラム
 wawa:
   bne a0, a1, 8
   addi fp, fp, 3
@@ -15,6 +15,19 @@ uouo:
   addi sp, sp, 16
   jal wawa
 main:
+  li s0, 30
+  li s0, -1234
+  li s0, 123456
+  li s0, -123456789
+  li s0, -2147483648
+  srai s0, s0, 10
+  srli s0, s0, 10
+  srli s0, s0, 10
+  sll  s0, s0, s0
+  slli s0, s0, 1
+  sltiu a5, s0, -1
+  addi s0, zero, 3
+  sltiu s0, s0, -1
   addi sp, sp, -16
   sw s0, 8(sp)
   addi s0, sp, 16

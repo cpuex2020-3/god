@@ -29,7 +29,19 @@ signed char assembly(struct instruction instruction){
   }
   // OP Fmt:R
   else if(instruction.opcode==0b0110011){
-    if(instruction.funct3==0b000){
+    if(instruction.funct3==0b001){
+      fprintf(fp, "sll  ");
+    }
+    else if(instruction.funct3==0b101){
+      if(instruction.funct7==0b0000000){
+        fprintf(fp, "srl  ");
+      }
+      else if(instruction.funct7==0b0100000){
+        fprintf(fp, "sra  ");
+      }
+      else return -10;
+    }
+    else if(instruction.funct3==0b000){
       if(instruction.funct7==0b0000000){
         fprintf(fp, "add  ");
       }
@@ -53,12 +65,28 @@ signed char assembly(struct instruction instruction){
     else if(instruction.funct3==0b010){
       fprintf(fp, "slt  ");
     }
+    // sltu
+    else if(instruction.funct3==0b011){
+      fprintf(fp, "sltu ");
+    }
     else return -10;
     fprintf(fp, " x%d, x%d, x%d\n", instruction.rd_index, instruction.rs1_index, instruction.rs2_index);
   }
   // OP-IMM Fmt:I
   else if(instruction.opcode==0b0010011){
-    if(instruction.funct3==0b000){
+    if(instruction.funct3==0b001){
+      fprintf(fp, "slli ");
+    }
+    else if(instruction.funct3==0b101){
+      if(instruction.funct7==0b0000000){
+        fprintf(fp, "srli ");
+      }
+      else if(instruction.funct7==0b0100000){
+        fprintf(fp, "srai ");
+      }
+      else return -10;
+    }
+    else if(instruction.funct3==0b000){
       fprintf(fp, "addi ");
     }
     else if(instruction.funct3==0b100){
@@ -75,6 +103,10 @@ signed char assembly(struct instruction instruction){
     // slt
     else if(instruction.funct3==0b010){
       fprintf(fp, "slti ");
+    }
+    // sltiu
+    else if(instruction.funct3==0b011){
+      fprintf(fp, "sltiu");
     }
     else return -10;
     fprintf(fp, " x%d, x%d, %d\n", instruction.rd_index, instruction.rs1_index, instruction.imm);
@@ -93,8 +125,16 @@ signed char assembly(struct instruction instruction){
       fprintf(fp, "blt  ");
     }
     // bge
-    else if(instruction.funct3==0b100){
+    else if(instruction.funct3==0b101){
       fprintf(fp, "bge  ");
+    }
+    // bltu
+    else if(instruction.funct3==0b110){
+      fprintf(fp, "bltu ");
+    }
+    // bgeu
+    else if(instruction.funct3==0b111){
+      fprintf(fp, "bgeu ");
     }
     else return -10;
     fprintf(fp, " x%d, x%d, %d\n", instruction.rs1_index, instruction.rs2_index, instruction.imm);
