@@ -6,7 +6,7 @@ int32_t pc;
 void show_registers();  // x0-x31を出力。
 
 // simulatorの最初と最後に実行。
-signed char init_data(int32_t size_memory_quarter);  // memoryの確保, sp,gpの初期化。mallocミスで -1。
+signed char init_data(int32_t size_memory_quarter);  // memoryの確保, gp,hp,spの初期化。mallocミスで -1。
 void free_memory();  // mallocしたmemoryの解放。
 
 // name/addressをindex_uoに渡す。例外処理をしなさーい。 -> indexをload_uo,store_uoに渡す。

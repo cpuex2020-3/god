@@ -34,7 +34,7 @@ int main(int argc, char *argv[]){
         return 0;
       }
     }
-    printf("main : %d\n", pc);
+    printf("min_caml_start : %d\n", pc);
   }
 
   else{

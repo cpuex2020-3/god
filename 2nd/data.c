@@ -5,7 +5,7 @@
 int32_t pc = 0;
 
 int32_t registers[32] = {0};
-char *abi_names[34] = {"zero","ra","sp","gp","tp","t0","t1","t2","s0/fp","s1","a0","a1","a2","a3","a4","a5","a6","a7","s2","s3","s4","s5","s6","s7","s8","s9","s10","s11","t3","t4","t5","t6","s0","fp"};
+char *abi_names[36] = {"zero","ra","sp","gp","tp","t0/hp","t1","t2","s0/fp","s1","a0","a1","a2","a3","a4","a5","a6","a7","s2","s3","s4","s5","s6","s7","s8","s9","s10","s11","t3","t4","t5","t6","t0","hp","s0","fp"};
 
 int size_memory = 0; // 各領域のword数 = 配列のサイズ
 struct instruction *text_memory = NULL;  // text領域, 実行時はread only。
@@ -16,7 +16,7 @@ void show_registers(){
     printf("%s",abi_names[i]);
     if(i==0) printf(" ");
     else if(i==26||i==27) printf("  ");
-    else if(i!=8) printf("   ");
+    else if(i!=5&&i!=8) printf("   ");
     printf(" : %d\n",registers[i]);
   }
   return;
@@ -36,8 +36,9 @@ signed char init_data(int32_t size){
       return -1;
     }
   }
-  registers[2] = (size_memory*3)*4; // sp = stack領域の先頭。
-  registers[3] = (size_memory)*4;   // gp = data領域の先頭、本来は真ん中らしい。
+  registers[3] = (size_memory*1)*4; // gp = data領域の先頭。本来は真ん中。
+  registers[5] = (size_memory*2)*4; // hp = heap領域の先頭。
+  registers[2] = (size_memory*3)*4; // sp = stack領域の先頭。本来は末尾。
   return 0;
 }
 
@@ -51,13 +52,16 @@ void free_memory(){
 
 int index_register(char *name){
   int i = 0;
-  while(i<34&&eqlstr(name,abi_names[i])<0){
+  while(i<36&&eqlstr(name,abi_names[i])<0){
     i++;
   }
-  if(i==34){
+  if(i==36){
     return -1;
   }
   else if(i==32||i==33){
+    i = 5;
+  }
+  else if(i==34||i==35){
     i = 8;
   }
   return i;

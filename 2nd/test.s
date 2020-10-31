@@ -14,7 +14,7 @@ uouo:
   lw s0, 8(sp)
   addi sp, sp, 16
   jal wawa
-main:
+min_caml_start:
   li s0, 30
   li s0, -1234
   li s0, 123456

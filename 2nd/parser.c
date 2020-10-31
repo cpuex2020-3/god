@@ -5,11 +5,11 @@
 
 struct label_list {
   char name[256];
-  int32_t offset;
+  int32_t address;
   struct label_list *next;
 };
 
-void add_list(struct label_list** li, char name[256], int32_t offset){
+void add_list(struct label_list** li, char name[256], int32_t address){
   struct label_list* st;
   st = (struct label_list *)malloc(sizeof(struct label_list));
   int i = 0;
@@ -17,7 +17,7 @@ void add_list(struct label_list** li, char name[256], int32_t offset){
     (st->name)[i] = name[i];
   }
   (st->name)[i] = '\0';
-  st->offset = offset;
+  st->address = address;
   st->next = *li;
   *li = st;
   return;
@@ -25,7 +25,7 @@ void add_list(struct label_list** li, char name[256], int32_t offset){
 
 int32_t search_list(struct label_list *li, char *name){
   if(li==NULL) return -1;
-  else if(eqlstr(li->name,name)==0) return li->offset;
+  else if(eqlstr(li->name,name)==0) return li->address;
   else return search_list(li->next,name);
 }
 
@@ -37,16 +37,15 @@ void delete_list(struct label_list *li){
   return;
 }
 
-int32_t text_offset = 0;  // pcからの相対位置
-int32_t data_offset = 0;  // gpからの相対位置
-int32_t gp = 0;
+int32_t text_address = 0;
+int32_t data_address = 0;
 void init_parser(){
   struct instruction halt;
   halt.opcode = 0b0000000;
-  store_text(index_register("ra"), halt);  // pcとraの初期値は0です。
-  text_offset = 4;  // 命令はpcの初期値の次の場所から順に書き込んでいく。
-  data_offset = 0;
-  gp = load_regster(index_register("gp"));
+  /* pcとraの初期値は0です。*/
+  store_text(index_register("ra"), halt);
+  text_address = pc+4;
+  data_address = load_regster(index_register("gp"));
   return;
 }
 
@@ -123,8 +122,8 @@ signed char labeling(char t[256]){
   while(t[i_t]!=':') i_t++;
   t[i_t] = '\0';
   // indexのインクリメントは実際にメモリに書き込むとき。
-  if(mode==0) add_list(&labels, t, text_offset);
-  else if(mode==1) add_list(&labels, t, data_offset);
+  if(mode==0) add_list(&labels, t, text_address);
+  else if(mode==1) add_list(&labels, t, data_address);
   return 0;
 }
 
@@ -133,7 +132,20 @@ signed char directive(char t[256]){
   if(eqlstr(t,".data")==0) mode = 1;
   else if(eqlstr(t,".text")==0) mode = 0;
   else if(eqlstr(t,".align")==0){
-    /* 4-alignment以外想定してないんだけど */
+    /* エラー処理だけして読み飛ばしてる。 */
+    char imm[256];
+    if(operand(&imm)!=1) return -1;
+    int32_t i = immediate(imm,32);
+    if(eqlstr(imm,"1048576")!=0&&i==1048576) return -1;
+    if(i<=0) return -1;
+  }
+  else if(eqlstr(t,".balign")==0){
+    /* エラー処理だけして読み飛ばしてる。 */
+    char imm[256];
+    if(operand(&imm)!=1) return -1;
+    int32_t i = immediate(imm,31);
+    if(eqlstr(imm,"1048576")!=0&&i==1048576) return -1;
+    if(i<=0) return -1;
   }
   else if(eqlstr(t,".globl")==0){
     /* 外部関数実装時に書くか */
@@ -160,10 +172,10 @@ signed char instruction(char t[256]){
     type_I.rd_index = index_register(rd);
     type_I.rs1_index = index_register(rs1);
     type_I.imm = immediate(imm,11);
-    int i = index_text(pc+text_offset);
+    int i = index_text(text_address);
     if(i<0||type_I.rd_index<0||type_I.rs1_index<0||type_I.imm==1048576) return -1;
     store_text(i,type_I);
-    text_offset = text_offset+4;
+    text_address = text_address+4;
   }
   else if(eqlstr(t,"sw")==0){
     char rs1[256],rs2[256],imm[256];
@@ -174,10 +186,10 @@ signed char instruction(char t[256]){
     type_S.rs1_index = index_register(rs1);
     type_S.rs2_index = index_register(rs2);
     type_S.imm = immediate(imm,11);
-    int i = index_text(pc+text_offset);
+    int i = index_text(text_address);
     if(i<0||type_S.rs1_index<0||type_S.rs2_index<0||type_S.imm==1048576) return -1;
     store_text(i,type_S);
-    text_offset = text_offset+4;
+    text_address = text_address+4;
   }
   else if(eqlstr(t,"sll")==0){
     char rd[256],rs1[256],rs2[256];
@@ -189,10 +201,10 @@ signed char instruction(char t[256]){
     type_R.rd_index = index_register(rd);
     type_R.rs1_index = index_register(rs1);
     type_R.rs2_index = index_register(rs2);
-    int i = index_text(pc+text_offset);
+    int i = index_text(text_address);
     if(i<0||type_R.rd_index<0||type_R.rs1_index<0||type_R.rs2_index<0) return -1;
     store_text(i,type_R);
-    text_offset = text_offset+4;
+    text_address = text_address+4;
   }
   else if(eqlstr(t,"slli")==0){
     char rd[256],rs1[256],imm[256];
@@ -204,10 +216,10 @@ signed char instruction(char t[256]){
     type_I.rd_index = index_register(rd);
     type_I.rs1_index = index_register(rs1);
     type_I.imm = immediate(imm,4);
-    int i = index_text(pc+text_offset);
+    int i = index_text(text_address);
     if(i<0||type_I.rd_index<0||type_I.rs1_index<0||type_I.imm==1048576) return -1;
     store_text(i,type_I);
-    text_offset = text_offset+4;
+    text_address = text_address+4;
   }
   else if(eqlstr(t,"srl")==0){
     char rd[256],rs1[256],rs2[256];
@@ -219,10 +231,10 @@ signed char instruction(char t[256]){
     type_R.rd_index = index_register(rd);
     type_R.rs1_index = index_register(rs1);
     type_R.rs2_index = index_register(rs2);
-    int i = index_text(pc+text_offset);
+    int i = index_text(text_address);
     if(i<0||type_R.rd_index<0||type_R.rs1_index<0||type_R.rs2_index<0) return -1;
     store_text(i,type_R);
-    text_offset = text_offset+4;
+    text_address = text_address+4;
   }
   else if(eqlstr(t,"srli")==0){
     char rd[256],rs1[256],imm[256];
@@ -234,10 +246,10 @@ signed char instruction(char t[256]){
     type_I.rd_index = index_register(rd);
     type_I.rs1_index = index_register(rs1);
     type_I.imm = immediate(imm,4);
-    int i = index_text(pc+text_offset);
+    int i = index_text(text_address);
     if(i<0||type_I.rd_index<0||type_I.rs1_index<0||type_I.imm==1048576) return -1;
     store_text(i,type_I);
-    text_offset = text_offset+4;
+    text_address = text_address+4;
   }
   else if(eqlstr(t,"sra")==0){
     char rd[256],rs1[256],rs2[256];
@@ -249,10 +261,10 @@ signed char instruction(char t[256]){
     type_R.rd_index = index_register(rd);
     type_R.rs1_index = index_register(rs1);
     type_R.rs2_index = index_register(rs2);
-    int i = index_text(pc+text_offset);
+    int i = index_text(text_address);
     if(i<0||type_R.rd_index<0||type_R.rs1_index<0||type_R.rs2_index<0) return -1;
     store_text(i,type_R);
-    text_offset = text_offset+4;
+    text_address = text_address+4;
   }
   else if(eqlstr(t,"srai")==0){
     char rd[256],rs1[256],imm[256];
@@ -264,10 +276,10 @@ signed char instruction(char t[256]){
     type_I.rd_index = index_register(rd);
     type_I.rs1_index = index_register(rs1);
     type_I.imm = immediate(imm,4);
-    int i = index_text(pc+text_offset);
+    int i = index_text(text_address);
     if(i<0||type_I.rd_index<0||type_I.rs1_index<0||type_I.imm==1048576) return -1;
     store_text(i,type_I);
-    text_offset = text_offset+4;
+    text_address = text_address+4;
   }
   else if(eqlstr(t,"add")==0){
     char rd[256],rs1[256],rs2[256];
@@ -279,10 +291,10 @@ signed char instruction(char t[256]){
     type_R.rd_index = index_register(rd);
     type_R.rs1_index = index_register(rs1);
     type_R.rs2_index = index_register(rs2);
-    int i = index_text(pc+text_offset);
+    int i = index_text(text_address);
     if(i<0||type_R.rd_index<0||type_R.rs1_index<0||type_R.rs2_index<0) return -1;
     store_text(i,type_R);
-    text_offset = text_offset+4;
+    text_address = text_address+4;
   }
   else if(eqlstr(t,"addi")==0){
     char rd[256],rs1[256],imm[256];
@@ -293,10 +305,10 @@ signed char instruction(char t[256]){
     type_I.rd_index = index_register(rd);
     type_I.rs1_index = index_register(rs1);
     type_I.imm = immediate(imm,11);
-    int i = index_text(pc+text_offset);
+    int i = index_text(text_address);
     if(i<0||type_I.rd_index<0||type_I.rs1_index<0||type_I.imm==1048576) return -1;
     store_text(i,type_I);
-    text_offset = text_offset+4;
+    text_address = text_address+4;
   }
   else if(eqlstr(t,"sub")==0){
     char rd[256],rs1[256],rs2[256];
@@ -308,10 +320,10 @@ signed char instruction(char t[256]){
     type_R.rd_index = index_register(rd);
     type_R.rs1_index = index_register(rs1);
     type_R.rs2_index = index_register(rs2);
-    int i = index_text(pc+text_offset);
+    int i = index_text(text_address);
     if(i<0||type_R.rd_index<0||type_R.rs1_index<0||type_R.rs2_index<0) return -1;
     store_text(i,type_R);
-    text_offset = text_offset+4;
+    text_address = text_address+4;
   }
   else if(eqlstr(t,"lui")==0){
     char rd[256],imm[256];
@@ -320,10 +332,10 @@ signed char instruction(char t[256]){
     type_U.opcode = 0b0110111;
     type_U.rd_index = index_register(rd);
     type_U.imm = immediate(imm,19);
-    int i = index_text(pc+text_offset);
+    int i = index_text(text_address);
     if(i<0||type_U.rd_index<0||type_U.imm==1048576) return -1;
     store_text(i,type_U);
-    text_offset = text_offset+4;
+    text_address = text_address+4;
   }
   else if(eqlstr(t,"auipc")==0){
     char rd[256],imm[256];
@@ -332,10 +344,10 @@ signed char instruction(char t[256]){
     type_U.opcode = 0b0010111;
     type_U.rd_index = index_register(rd);
     type_U.imm = immediate(imm,19);
-    int i = index_text(pc+text_offset);
+    int i = index_text(text_address);
     if(i<0||type_U.rd_index<0||type_U.imm==1048576) return -1;
     store_text(i,type_U);
-    text_offset = text_offset+4;
+    text_address = text_address+4;
   }
   else if(eqlstr(t,"xor")==0){
     char rd[256],rs1[256],rs2[256];
@@ -347,10 +359,10 @@ signed char instruction(char t[256]){
     type_R.rd_index = index_register(rd);
     type_R.rs1_index = index_register(rs1);
     type_R.rs2_index = index_register(rs2);
-    int i = index_text(pc+text_offset);
+    int i = index_text(text_address);
     if(i<0||type_R.rd_index<0||type_R.rs1_index<0||type_R.rs2_index<0) return -1;
     store_text(i,type_R);
-    text_offset = text_offset+4;
+    text_address = text_address+4;
   }
   else if(eqlstr(t,"xori")==0){
     char rd[256],rs1[256],imm[256];
@@ -361,10 +373,10 @@ signed char instruction(char t[256]){
     type_I.rd_index = index_register(rd);
     type_I.rs1_index = index_register(rs1);
     type_I.imm = immediate(imm,11);
-    int i = index_text(pc+text_offset);
+    int i = index_text(text_address);
     if(i<0||type_I.rd_index<0||type_I.rs1_index<0||type_I.imm==1048576) return -1;
     store_text(i,type_I);
-    text_offset = text_offset+4;
+    text_address = text_address+4;
   }
   else if(eqlstr(t,"or")==0){
     char rd[256],rs1[256],rs2[256];
@@ -376,10 +388,10 @@ signed char instruction(char t[256]){
     type_R.rd_index = index_register(rd);
     type_R.rs1_index = index_register(rs1);
     type_R.rs2_index = index_register(rs2);
-    int i = index_text(pc+text_offset);
+    int i = index_text(text_address);
     if(i<0||type_R.rd_index<0||type_R.rs1_index<0||type_R.rs2_index<0) return -1;
     store_text(i,type_R);
-    text_offset = text_offset+4;
+    text_address = text_address+4;
   }
   else if(eqlstr(t,"ori")==0){
     char rd[256],rs1[256],imm[256];
@@ -390,10 +402,10 @@ signed char instruction(char t[256]){
     type_I.rd_index = index_register(rd);
     type_I.rs1_index = index_register(rs1);
     type_I.imm = immediate(imm,11);
-    int i = index_text(pc+text_offset);
+    int i = index_text(text_address);
     if(i<0||type_I.rd_index<0||type_I.rs1_index<0||type_I.imm==1048576) return -1;
     store_text(i,type_I);
-    text_offset = text_offset+4;
+    text_address = text_address+4;
   }
   else if(eqlstr(t,"and")==0){
     char rd[256],rs1[256],rs2[256];
@@ -405,10 +417,10 @@ signed char instruction(char t[256]){
     type_R.rd_index = index_register(rd);
     type_R.rs1_index = index_register(rs1);
     type_R.rs2_index = index_register(rs2);
-    int i = index_text(pc+text_offset);
+    int i = index_text(text_address);
     if(i<0||type_R.rd_index<0||type_R.rs1_index<0||type_R.rs2_index<0) return -1;
     store_text(i,type_R);
-    text_offset = text_offset+4;
+    text_address = text_address+4;
   }
   else if(eqlstr(t,"andi")==0){
     char rd[256],rs1[256],imm[256];
@@ -419,10 +431,10 @@ signed char instruction(char t[256]){
     type_I.rd_index = index_register(rd);
     type_I.rs1_index = index_register(rs1);
     type_I.imm = immediate(imm,11);
-    int i = index_text(pc+text_offset);
+    int i = index_text(text_address);
     if(i<0||type_I.rd_index<0||type_I.rs1_index<0||type_I.imm==1048576) return -1;
     store_text(i,type_I);
-    text_offset = text_offset+4;
+    text_address = text_address+4;
   }
   else if(eqlstr(t,"slt")==0){
     char rd[256],rs1[256],rs2[256];
@@ -434,10 +446,10 @@ signed char instruction(char t[256]){
     type_R.rd_index = index_register(rd);
     type_R.rs1_index = index_register(rs1);
     type_R.rs2_index = index_register(rs2);
-    int i = index_text(pc+text_offset);
+    int i = index_text(text_address);
     if(i<0||type_R.rd_index<0||type_R.rs1_index<0||type_R.rs2_index<0) return -1;
     store_text(i,type_R);
-    text_offset = text_offset+4;
+    text_address = text_address+4;
   }
   else if(eqlstr(t,"slti")==0){
     char rd[256],rs1[256],imm[256];
@@ -448,10 +460,10 @@ signed char instruction(char t[256]){
     type_I.rd_index = index_register(rd);
     type_I.rs1_index = index_register(rs1);
     type_I.imm = immediate(imm,11);
-    int i = index_text(pc+text_offset);
+    int i = index_text(text_address);
     if(i<0||type_I.rd_index<0||type_I.rs1_index<0||type_I.imm==1048576) return -1;
     store_text(i,type_I);
-    text_offset = text_offset+4;
+    text_address = text_address+4;
   }
   else if(eqlstr(t,"sltu")==0){
     char rd[256],rs1[256],rs2[256];
@@ -463,10 +475,10 @@ signed char instruction(char t[256]){
     type_R.rd_index = index_register(rd);
     type_R.rs1_index = index_register(rs1);
     type_R.rs2_index = index_register(rs2);
-    int i = index_text(pc+text_offset);
+    int i = index_text(text_address);
     if(i<0||type_R.rd_index<0||type_R.rs1_index<0||type_R.rs2_index<0) return -1;
     store_text(i,type_R);
-    text_offset = text_offset+4;
+    text_address = text_address+4;
   }
   else if(eqlstr(t,"sltiu")==0){
     char rd[256],rs1[256],imm[256];
@@ -477,10 +489,10 @@ signed char instruction(char t[256]){
     type_I.rd_index = index_register(rd);
     type_I.rs1_index = index_register(rs1);
     type_I.imm = immediate(imm,11);
-    int i = index_text(pc+text_offset);
+    int i = index_text(text_address);
     if(i<0||type_I.rd_index<0||type_I.rs1_index<0||type_I.imm==1048576) return -1;
     store_text(i,type_I);
-    text_offset = text_offset+4;
+    text_address = text_address+4;
   }
   else if(eqlstr(t,"beq")==0){
     char rs1[256],rs2[256],imm[256];
@@ -491,10 +503,10 @@ signed char instruction(char t[256]){
     type_B.rs1_index = index_register(rs1);
     type_B.rs2_index = index_register(rs2);
     type_B.imm = immediate(imm,12);
-    int i = index_text(pc+text_offset);
+    int i = index_text(text_address);
     if(i<0||type_B.rs1_index<0||type_B.rs2_index<0||type_B.imm==1048576) return -1;
     store_text(i,type_B);
-    text_offset = text_offset+4;
+    text_address = text_address+4;
   }
   else if(eqlstr(t,"bne")==0){
     char rs1[256],rs2[256],imm[256];
@@ -505,10 +517,10 @@ signed char instruction(char t[256]){
     type_B.rs1_index = index_register(rs1);
     type_B.rs2_index = index_register(rs2);
     type_B.imm = immediate(imm,12);
-    int i = index_text(pc+text_offset);
+    int i = index_text(text_address);
     if(i<0||type_B.rs1_index<0||type_B.rs2_index<0||type_B.imm==1048576) return -1;
     store_text(i,type_B);
-    text_offset = text_offset+4;
+    text_address = text_address+4;
   }
   else if(eqlstr(t,"blt")==0){
     char rs1[256],rs2[256],imm[256];
@@ -519,10 +531,10 @@ signed char instruction(char t[256]){
     type_B.rs1_index = index_register(rs1);
     type_B.rs2_index = index_register(rs2);
     type_B.imm = immediate(imm,12);
-    int i = index_text(pc+text_offset);
+    int i = index_text(text_address);
     if(i<0||type_B.rs1_index<0||type_B.rs2_index<0||type_B.imm==1048576) return -1;
     store_text(i,type_B);
-    text_offset = text_offset+4;
+    text_address = text_address+4;
   }
   else if(eqlstr(t,"bge")==0){
     char rs1[256],rs2[256],imm[256];
@@ -533,10 +545,10 @@ signed char instruction(char t[256]){
     type_B.rs1_index = index_register(rs1);
     type_B.rs2_index = index_register(rs2);
     type_B.imm = immediate(imm,12);
-    int i = index_text(pc+text_offset);
+    int i = index_text(text_address);
     if(i<0||type_B.rs1_index<0||type_B.rs2_index<0||type_B.imm==1048576) return -1;
     store_text(i,type_B);
-    text_offset = text_offset+4;
+    text_address = text_address+4;
   }
   else if(eqlstr(t,"bltu")==0){
     char rs1[256],rs2[256],imm[256];
@@ -547,10 +559,10 @@ signed char instruction(char t[256]){
     type_B.rs1_index = index_register(rs1);
     type_B.rs2_index = index_register(rs2);
     type_B.imm = immediate(imm,12);
-    int i = index_text(pc+text_offset);
+    int i = index_text(text_address);
     if(i<0||type_B.rs1_index<0||type_B.rs2_index<0||type_B.imm==1048576) return -1;
     store_text(i,type_B);
-    text_offset = text_offset+4;
+    text_address = text_address+4;
   }
   else if(eqlstr(t,"bgeu")==0){
     char rs1[256],rs2[256],imm[256];
@@ -561,10 +573,10 @@ signed char instruction(char t[256]){
     type_B.rs1_index = index_register(rs1);
     type_B.rs2_index = index_register(rs2);
     type_B.imm = immediate(imm,12);
-    int i = index_text(pc+text_offset);
+    int i = index_text(text_address);
     if(i<0||type_B.rs1_index<0||type_B.rs2_index<0||type_B.imm==1048576) return -1;
     store_text(i,type_B);
-    text_offset = text_offset+4;
+    text_address = text_address+4;
   }
   else if(eqlstr(t,"jal")==0){
     char rd[256],imm[256];
@@ -576,26 +588,26 @@ signed char instruction(char t[256]){
       type_J.opcode = 0b1101111;
       type_J.rd_index = index_register(rd);
       type_J.imm = immediate(imm,20);
-      int i = index_text(pc+text_offset);
+      int i = index_text(text_address);
       if(i<0||type_J.rd_index<0||type_J.imm==1048576) return -1;
       store_text(i,type_J);
-      text_offset = text_offset+4;
+      text_address = text_address+4;
     }
     // ラベルの場合
     else{
-      int32_t offset = search_list(labels,rd);
-      if(offset<0) return -1;
-      int32_t distance = offset - text_offset;
+      int32_t address = search_list(labels,rd);
+      if(address<0) return -1;
+      int32_t distance = address - text_address;
       // jalで飛べる場合は jal ra, distance。
       if(-1048576<=distance&&distance<1048576){
         struct instruction type_J;
         type_J.opcode = 0b1101111;
         type_J.rd_index = index_register("ra");
         type_J.imm = distance;
-        int i = index_text(pc+text_offset);
+        int i = index_text(text_address);
         if(i<0) return -1;
         store_text(i,type_J);
-        text_offset = text_offset+4;
+        text_address = text_address+4;
       }
       // 飛べない場合は auipc t1, uo -> jal ra, t1, uouo。本来は jal ではなく call を使う。
       else{
@@ -605,19 +617,19 @@ signed char instruction(char t[256]){
         type_U.opcode = 0b0010111;
         type_U.rd_index = index_register("t1");
         type_U.imm = dis_lui;
-        int i = index_text(pc+text_offset);
+        int i = index_text(text_address);
         if(i<0) return -1;
         store_text(i,type_U);
-        text_offset = text_offset+4;
+        text_address = text_address+4;
         struct instruction type_I;
         type_I.opcode = 0b1100111;
         type_I.funct3 = 0b000;
         type_I.rd_index = index_register("ra");
         type_I.rs1_index = index_register("t1");
         type_I.imm = distance-(dis_lui<<12);
-        i = index_text(pc+text_offset);
+        i = index_text(text_address);
         store_text(i,type_I);
-        text_offset = text_offset+4;
+        text_address = text_address+4;
       }
     }
   }
@@ -630,10 +642,10 @@ signed char instruction(char t[256]){
     type_I.rd_index = index_register(rd);
     type_I.rs1_index = index_register(rs1);
     type_I.imm = immediate(imm,11);
-    int i = index_text(pc+text_offset);
+    int i = index_text(text_address);
     if(i<0||type_I.rd_index<0||type_I.rs1_index<0||type_I.imm==1048576) return -1;
     store_text(i,type_I);
-    text_offset = text_offset+4;
+    text_address = text_address+4;
   }
   else if(eqlstr(t,"li")==0){
     char rd[256],imm[256];
@@ -649,10 +661,10 @@ signed char instruction(char t[256]){
       type_I.rd_index = index_register(rd);
       type_I.rs1_index = index_register("zero");
       type_I.imm = imm_li;
-      int i = index_text(pc+text_offset);
+      int i = index_text(text_address);
       if(i<0||type_I.rd_index<0) return -1;
       store_text(i,type_I);
-      text_offset = text_offset+4;
+      text_address = text_address+4;
     }
     // 収まらないならlui rd, (imm_li>>12) -> addi rd, rd, imm_li-((imm_li>>12)<<12)。
     else{
@@ -660,20 +672,60 @@ signed char instruction(char t[256]){
       type_U.opcode = 0b0110111;
       type_U.rd_index = index_register(rd);
       type_U.imm = imm_li>>12;
-      int i = index_text(pc+text_offset);
+      int i = index_text(text_address);
       if(i<0||type_U.rd_index<0) return -1;
       store_text(i,type_U);
-      text_offset = text_offset+4;
+      text_address = text_address+4;
       struct instruction type_I;
       type_I.opcode = 0b0010011;
       type_I.funct3 = 0b000;
       type_I.rd_index = index_register(rd);
       type_I.rs1_index = index_register(rd);
       type_I.imm = imm_li-((imm_li>>12)<<12);
-      i = index_text(pc+text_offset);
+      i = index_text(text_address);
       if(i<0||type_I.rd_index<0) return -1;
       store_text(i,type_I);
-      text_offset = text_offset+4;
+      text_address = text_address+4;
+    }
+  }
+  else if(eqlstr(t,"la")==0){
+    char rd[256],label[256];
+    if(operand(&rd)!=0||operand(&label)!=1) return -1;
+    int32_t imm_li = search_list(labels,label);
+    if(imm_li<0) return -1;
+    // imm_liが12bitで収まるなら addi rd, zero, imm_li。
+    if(-2048<=imm_li&&imm_li<2048){
+      struct instruction type_I;
+      type_I.opcode = 0b0010011;
+      type_I.funct3 = 0b000;
+      type_I.rd_index = index_register(rd);
+      type_I.rs1_index = index_register("zero");
+      type_I.imm = imm_li;
+      int i = index_text(text_address);
+      if(i<0||type_I.rd_index<0) return -1;
+      store_text(i,type_I);
+      text_address = text_address+4;
+    }
+    // 収まらないならlui rd, (imm_li>>12) -> addi rd, rd, imm_li-((imm_li>>12)<<12)。
+    else{
+      struct instruction type_U;
+      type_U.opcode = 0b0110111;
+      type_U.rd_index = index_register(rd);
+      type_U.imm = imm_li>>12;
+      int i = index_text(text_address);
+      if(i<0||type_U.rd_index<0) return -1;
+      store_text(i,type_U);
+      text_address = text_address+4;
+      struct instruction type_I;
+      type_I.opcode = 0b0010011;
+      type_I.funct3 = 0b000;
+      type_I.rd_index = index_register(rd);
+      type_I.rs1_index = index_register(rd);
+      type_I.imm = imm_li-((imm_li>>12)<<12);
+      i = index_text(text_address);
+      if(i<0||type_I.rd_index<0) return -1;
+      store_text(i,type_I);
+      text_address = text_address+4;
     }
   }
   // mv rd, rs1 -> addi rd, rs1, 0
@@ -686,10 +738,10 @@ signed char instruction(char t[256]){
     type_I.rd_index = index_register(rd);
     type_I.rs1_index = index_register(rs1);
     type_I.imm = 0;
-    int i = index_text(pc+text_offset);
+    int i = index_text(text_address);
     if(i<0||type_I.rd_index<0||type_I.rs1_index<0) return -1;
     store_text(i,type_I);
-    text_offset = text_offset+4;
+    text_address = text_address+4;
   }
   // ret -> jalr zero, ra, 0
   else if(eqlstr(t,"ret")==0){
@@ -700,19 +752,19 @@ signed char instruction(char t[256]){
     type_I.rd_index = index_register("zero");
     type_I.rs1_index = index_register("ra");
     type_I.imm = 0;
-    int i = index_text(pc+text_offset);
+    int i = index_text(text_address);
     if(i<0) return -1;
     store_text(i,type_I);
-    text_offset = text_offset+4;
+    text_address = text_address+4;
   }
   else if(eqlstr(t,"halt")==0){
     if(s[i_s]!='\0') return -1;
     struct instruction halt;
     halt.opcode = 0b0000000;
-    int i = index_text(pc+text_offset);
+    int i = index_text(text_address);
     if(i<0) return -1;
     store_text(i, halt);
-    text_offset = text_offset+4;
+    text_address = text_address+4;
   }
   else return -1;
   return 0;
@@ -785,15 +837,15 @@ signed char parse(char *file_name){
   /* jalr zero, ra, 0にした方が行儀が良さそうだけど、こっちの方が便利なので。*/
   struct instruction halt;
   halt.opcode = 0b0000000;
-  int i = index_text(pc+text_offset);
+  int i = index_text(text_address);
   if(i<0){
     fclose(fp);
     delete_list(labels);
     return -1;
   }
 
-  /* mainから実行を始めます。 */
-  int32_t main = search_list(labels,"main");
+  /* min_caml_startから実行を始めます。 */
+  int32_t main = search_list(labels,"min_caml_start");
   if(main<0){
     fclose(fp);
     delete_list(labels);
