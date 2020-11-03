@@ -497,86 +497,350 @@ signed char instruction(char t[256]){
   else if(eqlstr(t,"beq")==0){
     char rs1[256],rs2[256],imm[256];
     if(operand(&rs1)!=0||operand(&rs2)!=0||operand(&imm)!=1) return -1;
-    struct instruction type_B;
-    type_B.opcode = 0b1100011;
-    type_B.funct3 = 0b000;
-    type_B.rs1_index = index_register(rs1);
-    type_B.rs2_index = index_register(rs2);
-    type_B.imm = immediate(imm,12);
-    int i = index_text(text_address);
-    if(i<0||type_B.rs1_index<0||type_B.rs2_index<0||type_B.imm==1048576) return -1;
-    store_text(i,type_B);
-    text_address = text_address+4;
+    int32_t im = immediate(imm,12);
+    if(im!=1048576){
+      struct instruction type_B;
+      type_B.opcode = 0b1100011;
+      type_B.funct3 = 0b000;
+      type_B.rs1_index = index_register(rs1);
+      type_B.rs2_index = index_register(rs2);
+      type_B.imm = im;
+      int i = index_text(text_address);
+      if(i<0||type_B.rs1_index<0||type_B.rs2_index<0) return -1;
+      store_text(i,type_B);
+      text_address = text_address+4;
+    }
+    else{
+      int32_t address = search_list(labels,imm);
+      if(address<0) return -1;
+      int32_t distance = address - text_address;
+      // beqで飛べる場合は beq rs1, rs2, distance。
+      if(-4096<=distance&&distance<4096){
+        struct instruction type_B;
+        type_B.opcode = 0b1100011;
+        type_B.funct3 = 0b000;
+        type_B.rs1_index = index_register(rs1);
+        type_B.rs2_index = index_register(rs2);
+        type_B.imm = distance;
+        int i = index_text(text_address);
+        if(i<0||type_B.rs1_index<0||type_B.rs2_index<0) return -1;
+        store_text(i,type_B);
+        text_address = text_address+4;
+      }
+      // 飛べない場合は auipc t1, uo -> beq rs1, rs2, uouo。
+      else{
+        distance = distance-4;
+        int32_t dis_lui = distance>>12;
+        struct instruction type_U;
+        type_U.opcode = 0b0010111;
+        type_U.rd_index = index_register("t1");
+        type_U.imm = dis_lui;
+        int i = index_text(text_address);
+        if(i<0) return -1;
+        store_text(i,type_U);
+        text_address = text_address+4;
+        struct instruction type_B;
+        type_B.opcode = 0b1100011;
+        type_B.funct3 = 0b000;
+        type_B.rs1_index = index_register(rs1);
+        type_B.rs2_index = index_register(rs2);
+        type_B.imm = distance-(dis_lui<<12);
+        i = index_text(text_address);
+        if(i<0||type_B.rs1_index<0||type_B.rs2_index<0) return -1;
+        store_text(i,type_B);
+        text_address = text_address+4;
+      }
+    }
   }
   else if(eqlstr(t,"bne")==0){
     char rs1[256],rs2[256],imm[256];
     if(operand(&rs1)!=0||operand(&rs2)!=0||operand(&imm)!=1) return -1;
-    struct instruction type_B;
-    type_B.opcode = 0b1100011;
-    type_B.funct3 = 0b001;
-    type_B.rs1_index = index_register(rs1);
-    type_B.rs2_index = index_register(rs2);
-    type_B.imm = immediate(imm,12);
-    int i = index_text(text_address);
-    if(i<0||type_B.rs1_index<0||type_B.rs2_index<0||type_B.imm==1048576) return -1;
-    store_text(i,type_B);
-    text_address = text_address+4;
+    int32_t im = immediate(imm,12);
+    if(im!=1048576){
+      struct instruction type_B;
+      type_B.opcode = 0b1100011;
+      type_B.funct3 = 0b001;
+      type_B.rs1_index = index_register(rs1);
+      type_B.rs2_index = index_register(rs2);
+      type_B.imm = im;
+      int i = index_text(text_address);
+      if(i<0||type_B.rs1_index<0||type_B.rs2_index<0) return -1;
+      store_text(i,type_B);
+      text_address = text_address+4;
+    }
+    else{
+      int32_t address = search_list(labels,imm);
+      if(address<0) return -1;
+      int32_t distance = address - text_address;
+      // beqで飛べる場合は bne rs1, rs2, distance。
+      if(-4096<=distance&&distance<4096){
+        struct instruction type_B;
+        type_B.opcode = 0b1100011;
+        type_B.funct3 = 0b001;
+        type_B.rs1_index = index_register(rs1);
+        type_B.rs2_index = index_register(rs2);
+        type_B.imm = distance;
+        int i = index_text(text_address);
+        if(i<0||type_B.rs1_index<0||type_B.rs2_index<0) return -1;
+        store_text(i,type_B);
+        text_address = text_address+4;
+      }
+      // 飛べない場合は auipc t1, uo -> bne rs1, rs2, uouo。
+      else{
+        distance = distance-4;
+        int32_t dis_lui = distance>>12;
+        struct instruction type_U;
+        type_U.opcode = 0b0010111;
+        type_U.rd_index = index_register("t1");
+        type_U.imm = dis_lui;
+        int i = index_text(text_address);
+        if(i<0) return -1;
+        store_text(i,type_U);
+        text_address = text_address+4;
+        struct instruction type_B;
+        type_B.opcode = 0b1100011;
+        type_B.funct3 = 0b001;
+        type_B.rs1_index = index_register(rs1);
+        type_B.rs2_index = index_register(rs2);
+        type_B.imm = distance-(dis_lui<<12);
+        i = index_text(text_address);
+        if(i<0||type_B.rs1_index<0||type_B.rs2_index<0) return -1;
+        store_text(i,type_B);
+        text_address = text_address+4;
+      }
+    }
   }
   else if(eqlstr(t,"blt")==0){
     char rs1[256],rs2[256],imm[256];
     if(operand(&rs1)!=0||operand(&rs2)!=0||operand(&imm)!=1) return -1;
-    struct instruction type_B;
-    type_B.opcode = 0b1100011;
-    type_B.funct3 = 0b100;
-    type_B.rs1_index = index_register(rs1);
-    type_B.rs2_index = index_register(rs2);
-    type_B.imm = immediate(imm,12);
-    int i = index_text(text_address);
-    if(i<0||type_B.rs1_index<0||type_B.rs2_index<0||type_B.imm==1048576) return -1;
-    store_text(i,type_B);
-    text_address = text_address+4;
+    int32_t im = immediate(imm,12);
+    if(im!=1048576){
+      struct instruction type_B;
+      type_B.opcode = 0b1100011;
+      type_B.funct3 = 0b100;
+      type_B.rs1_index = index_register(rs1);
+      type_B.rs2_index = index_register(rs2);
+      type_B.imm = im;
+      int i = index_text(text_address);
+      if(i<0||type_B.rs1_index<0||type_B.rs2_index<0) return -1;
+      store_text(i,type_B);
+      text_address = text_address+4;
+    }
+    else{
+      int32_t address = search_list(labels,imm);
+      if(address<0) return -1;
+      int32_t distance = address - text_address;
+      // beqで飛べる場合は blt rs1, rs2, distance。
+      if(-4096<=distance&&distance<4096){
+        struct instruction type_B;
+        type_B.opcode = 0b1100011;
+        type_B.funct3 = 0b100;
+        type_B.rs1_index = index_register(rs1);
+        type_B.rs2_index = index_register(rs2);
+        type_B.imm = distance;
+        int i = index_text(text_address);
+        if(i<0||type_B.rs1_index<0||type_B.rs2_index<0) return -1;
+        store_text(i,type_B);
+        text_address = text_address+4;
+      }
+      // 飛べない場合は auipc t1, uo -> blt rs1, rs2, uouo。
+      else{
+        distance = distance-4;
+        int32_t dis_lui = distance>>12;
+        struct instruction type_U;
+        type_U.opcode = 0b0010111;
+        type_U.rd_index = index_register("t1");
+        type_U.imm = dis_lui;
+        int i = index_text(text_address);
+        if(i<0) return -1;
+        store_text(i,type_U);
+        text_address = text_address+4;
+        struct instruction type_B;
+        type_B.opcode = 0b1100011;
+        type_B.funct3 = 0b100;
+        type_B.rs1_index = index_register(rs1);
+        type_B.rs2_index = index_register(rs2);
+        type_B.imm = distance-(dis_lui<<12);
+        i = index_text(text_address);
+        if(i<0||type_B.rs1_index<0||type_B.rs2_index<0) return -1;
+        store_text(i,type_B);
+        text_address = text_address+4;
+      }
+    }
   }
   else if(eqlstr(t,"bge")==0){
     char rs1[256],rs2[256],imm[256];
     if(operand(&rs1)!=0||operand(&rs2)!=0||operand(&imm)!=1) return -1;
-    struct instruction type_B;
-    type_B.opcode = 0b1100011;
-    type_B.funct3 = 0b101;
-    type_B.rs1_index = index_register(rs1);
-    type_B.rs2_index = index_register(rs2);
-    type_B.imm = immediate(imm,12);
-    int i = index_text(text_address);
-    if(i<0||type_B.rs1_index<0||type_B.rs2_index<0||type_B.imm==1048576) return -1;
-    store_text(i,type_B);
-    text_address = text_address+4;
+    int32_t im = immediate(imm,12);
+    if(im!=1048576){
+      struct instruction type_B;
+      type_B.opcode = 0b1100011;
+      type_B.funct3 = 0b101;
+      type_B.rs1_index = index_register(rs1);
+      type_B.rs2_index = index_register(rs2);
+      type_B.imm = im;
+      int i = index_text(text_address);
+      if(i<0||type_B.rs1_index<0||type_B.rs2_index<0) return -1;
+      store_text(i,type_B);
+      text_address = text_address+4;
+    }
+    else{
+      int32_t address = search_list(labels,imm);
+      if(address<0) return -1;
+      int32_t distance = address - text_address;
+      // beqで飛べる場合は bge rs1, rs2, distance。
+      if(-4096<=distance&&distance<4096){
+        struct instruction type_B;
+        type_B.opcode = 0b1100011;
+        type_B.funct3 = 0b101;
+        type_B.rs1_index = index_register(rs1);
+        type_B.rs2_index = index_register(rs2);
+        type_B.imm = distance;
+        int i = index_text(text_address);
+        if(i<0||type_B.rs1_index<0||type_B.rs2_index<0) return -1;
+        store_text(i,type_B);
+        text_address = text_address+4;
+      }
+      // 飛べない場合は auipc t1, uo -> bge rs1, rs2, uouo。
+      else{
+        distance = distance-4;
+        int32_t dis_lui = distance>>12;
+        struct instruction type_U;
+        type_U.opcode = 0b0010111;
+        type_U.rd_index = index_register("t1");
+        type_U.imm = dis_lui;
+        int i = index_text(text_address);
+        if(i<0) return -1;
+        store_text(i,type_U);
+        text_address = text_address+4;
+        struct instruction type_B;
+        type_B.opcode = 0b1100011;
+        type_B.funct3 = 0b101;
+        type_B.rs1_index = index_register(rs1);
+        type_B.rs2_index = index_register(rs2);
+        type_B.imm = distance-(dis_lui<<12);
+        i = index_text(text_address);
+        if(i<0||type_B.rs1_index<0||type_B.rs2_index<0) return -1;
+        store_text(i,type_B);
+        text_address = text_address+4;
+      }
+    }
   }
   else if(eqlstr(t,"bltu")==0){
     char rs1[256],rs2[256],imm[256];
     if(operand(&rs1)!=0||operand(&rs2)!=0||operand(&imm)!=1) return -1;
-    struct instruction type_B;
-    type_B.opcode = 0b1100011;
-    type_B.funct3 = 0b110;
-    type_B.rs1_index = index_register(rs1);
-    type_B.rs2_index = index_register(rs2);
-    type_B.imm = immediate(imm,12);
-    int i = index_text(text_address);
-    if(i<0||type_B.rs1_index<0||type_B.rs2_index<0||type_B.imm==1048576) return -1;
-    store_text(i,type_B);
-    text_address = text_address+4;
+    int32_t im = immediate(imm,12);
+    if(im!=1048576){
+      struct instruction type_B;
+      type_B.opcode = 0b1100011;
+      type_B.funct3 = 0b110;
+      type_B.rs1_index = index_register(rs1);
+      type_B.rs2_index = index_register(rs2);
+      type_B.imm = im;
+      int i = index_text(text_address);
+      if(i<0||type_B.rs1_index<0||type_B.rs2_index<0) return -1;
+      store_text(i,type_B);
+      text_address = text_address+4;
+    }
+    else{
+      int32_t address = search_list(labels,imm);
+      if(address<0) return -1;
+      int32_t distance = address - text_address;
+      // beqで飛べる場合は bltu rs1, rs2, distance。
+      if(-4096<=distance&&distance<4096){
+        struct instruction type_B;
+        type_B.opcode = 0b1100011;
+        type_B.funct3 = 0b110;
+        type_B.rs1_index = index_register(rs1);
+        type_B.rs2_index = index_register(rs2);
+        type_B.imm = distance;
+        int i = index_text(text_address);
+        if(i<0||type_B.rs1_index<0||type_B.rs2_index<0) return -1;
+        store_text(i,type_B);
+        text_address = text_address+4;
+      }
+      // 飛べない場合は auipc t1, uo -> bltu rs1, rs2, uouo。
+      else{
+        distance = distance-4;
+        int32_t dis_lui = distance>>12;
+        struct instruction type_U;
+        type_U.opcode = 0b0010111;
+        type_U.rd_index = index_register("t1");
+        type_U.imm = dis_lui;
+        int i = index_text(text_address);
+        if(i<0) return -1;
+        store_text(i,type_U);
+        text_address = text_address+4;
+        struct instruction type_B;
+        type_B.opcode = 0b1100011;
+        type_B.funct3 = 0b110;
+        type_B.rs1_index = index_register(rs1);
+        type_B.rs2_index = index_register(rs2);
+        type_B.imm = distance-(dis_lui<<12);
+        i = index_text(text_address);
+        if(i<0||type_B.rs1_index<0||type_B.rs2_index<0) return -1;
+        store_text(i,type_B);
+        text_address = text_address+4;
+      }
+    }
   }
   else if(eqlstr(t,"bgeu")==0){
     char rs1[256],rs2[256],imm[256];
     if(operand(&rs1)!=0||operand(&rs2)!=0||operand(&imm)!=1) return -1;
-    struct instruction type_B;
-    type_B.opcode = 0b1100011;
-    type_B.funct3 = 0b111;
-    type_B.rs1_index = index_register(rs1);
-    type_B.rs2_index = index_register(rs2);
-    type_B.imm = immediate(imm,12);
-    int i = index_text(text_address);
-    if(i<0||type_B.rs1_index<0||type_B.rs2_index<0||type_B.imm==1048576) return -1;
-    store_text(i,type_B);
-    text_address = text_address+4;
+    int32_t im = immediate(imm,12);
+    if(im!=1048576){
+      struct instruction type_B;
+      type_B.opcode = 0b1100011;
+      type_B.funct3 = 0b111;
+      type_B.rs1_index = index_register(rs1);
+      type_B.rs2_index = index_register(rs2);
+      type_B.imm = im;
+      int i = index_text(text_address);
+      if(i<0||type_B.rs1_index<0||type_B.rs2_index<0) return -1;
+      store_text(i,type_B);
+      text_address = text_address+4;
+    }
+    else{
+      int32_t address = search_list(labels,imm);
+      if(address<0) return -1;
+      int32_t distance = address - text_address;
+      // beqで飛べる場合は bgeu rs1, rs2, distance。
+      if(-4096<=distance&&distance<4096){
+        struct instruction type_B;
+        type_B.opcode = 0b1100011;
+        type_B.funct3 = 0b111;
+        type_B.rs1_index = index_register(rs1);
+        type_B.rs2_index = index_register(rs2);
+        type_B.imm = distance;
+        int i = index_text(text_address);
+        if(i<0||type_B.rs1_index<0||type_B.rs2_index<0) return -1;
+        store_text(i,type_B);
+        text_address = text_address+4;
+      }
+      // 飛べない場合は auipc t1, uo -> bgeu rs1, rs2, uouo。
+      else{
+        distance = distance-4;
+        int32_t dis_lui = distance>>12;
+        struct instruction type_U;
+        type_U.opcode = 0b0010111;
+        type_U.rd_index = index_register("t1");
+        type_U.imm = dis_lui;
+        int i = index_text(text_address);
+        if(i<0) return -1;
+        store_text(i,type_U);
+        text_address = text_address+4;
+        struct instruction type_B;
+        type_B.opcode = 0b1100011;
+        type_B.funct3 = 0b111;
+        type_B.rs1_index = index_register(rs1);
+        type_B.rs2_index = index_register(rs2);
+        type_B.imm = distance-(dis_lui<<12);
+        i = index_text(text_address);
+        if(i<0||type_B.rs1_index<0||type_B.rs2_index<0) return -1;
+        store_text(i,type_B);
+        text_address = text_address+4;
+      }
+    }
   }
   else if(eqlstr(t,"jal")==0){
     char rd[256],imm[256];
@@ -635,13 +899,24 @@ signed char instruction(char t[256]){
   }
   else if(eqlstr(t,"jalr")==0){
     char rd[256],rs1[256],imm[256];
-    if(operand(&rd)!=0||operand(&rs1)!=0||operand(&imm)!=1) return -1;
     struct instruction type_I;
     type_I.opcode = 0b1100111;
     type_I.funct3 = 0b000;
-    type_I.rd_index = index_register(rd);
-    type_I.rs1_index = index_register(rs1);
-    type_I.imm = immediate(imm,11);
+    signed char branch = operand(&rd);
+    if(branch==-1) return -1;
+    else if(branch==0){
+      if(operand(&rs1)!=0||operand(&imm)!=1) return -1;
+      type_I.rd_index = index_register(rd);
+      type_I.rs1_index = index_register(rs1);
+      type_I.imm = immediate(imm,11);
+    }
+    // jalr rs1 -> jalr ra, rs1, 0
+    else if(branch==1){
+      type_I.rd_index = index_register("ra");
+      type_I.rs1_index = index_register(rd);
+      type_I.imm = 0;
+    }
+    else return -1;
     int i = index_text(text_address);
     if(i<0||type_I.rd_index<0||type_I.rs1_index<0||type_I.imm==1048576) return -1;
     store_text(i,type_I);
@@ -757,6 +1032,19 @@ signed char instruction(char t[256]){
     store_text(i,type_I);
     text_address = text_address+4;
   }
+  // nop -> addi zero, zero, 0
+  else if(eqlstr(t,"nop")==0){
+    struct instruction type_I;
+    type_I.opcode = 0b0010011;
+    type_I.funct3 = 0b000;
+    type_I.rd_index = index_register("zero");
+    type_I.rs1_index = index_register("zero");
+    type_I.imm = 0;
+    int i = index_text(text_address);
+    if(i<0) return -1;
+    store_text(i,type_I);
+    text_address = text_address+4;
+  }
   else if(eqlstr(t,"halt")==0){
     if(s[i_s]!='\0') return -1;
     struct instruction halt;
@@ -804,7 +1092,7 @@ signed char parse(char *file_name){
     white_skip();
 
     /* parse errorが出たときはこれを使ってどこでerror吐いてるか確認すると幸せになれるかも。*/
-    // printf("%s\n", t);
+     printf("%s\n", t);
     /* 切り出した先頭を見て、label:, .uouo, instruction に場合分け */
     if(t[0]=='\0'){
     }
