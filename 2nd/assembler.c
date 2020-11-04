@@ -100,6 +100,19 @@ signed char binary(struct instruction instruction){
     print_uo(instruction.rd_index,5);
     print_uo(instruction.opcode,7);
   }
+  // rxbu Fmt:X
+  else if(instruction.opcode==0b0001011){
+    print_uo(0, 20);
+    print_uo(instruction.rd_index, 5);
+    print_uo(instruction.opcode, 7);
+  }
+  // txbu Fmt:X
+  else if(instruction.opcode==0b0011011){
+    print_uo(0, 12);
+    print_uo(instruction.rs1_index, 5);
+    print_uo(0, 8);
+    print_uo(instruction.opcode, 7);
+  }
   else return -10;
   return 0;
 };

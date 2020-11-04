@@ -2,57 +2,26 @@
 #include <stdlib.h>
 #include "instruction.h"
 #include "data.h"
-
-struct label_list {
-  char name[256];
-  int32_t address;
-  struct label_list *next;
-};
-
-void add_list(struct label_list** li, char name[256], int32_t address){
-  struct label_list* st;
-  st = (struct label_list *)malloc(sizeof(struct label_list));
-  int i = 0;
-  for (; name[i]!='\0'; i++){
-    (st->name)[i] = name[i];
-  }
-  (st->name)[i] = '\0';
-  st->address = address;
-  st->next = *li;
-  *li = st;
-  return;
-}
-
-int32_t search_list(struct label_list *li, char *name){
-  if(li==NULL) return -1;
-  else if(eqlstr(li->name,name)==0) return li->address;
-  else return search_list(li->next,name);
-}
-
-void delete_list(struct label_list *li){
-  if(li!=NULL){
-    delete_list(li->next);
-    free(li);
-  }
-  return;
-}
+#include "labels.h"
 
 int32_t text_address = 0;
 int32_t data_address = 0;
-void init_parser(){
+struct label_list *labels = NULL;
+
+void init_parser(char *file_name){
   struct instruction halt;
   halt.opcode = 0b0000000;
   /* pcとraの初期値は0です。*/
   store_text(index_register("ra"), halt);
   text_address = pc+4;
   data_address = load_regster(index_register("gp"));
+  labels = get_text_labels(file_name);
   return;
 }
 
 char s[256];
 int i_s = 0;
 char mode = 0;  // .textは0, .dataは1, それ以外はエラー。
-struct label_list *labels = NULL;
 
 void white_skip(){
   while(s[i_s]==9||s[i_s]==32) i_s++;
@@ -117,17 +86,74 @@ int32_t immediate(char *imm, int32_t bit){
   return value;
 }
 
+/* "0x01234567" を受け取って int32_t に直す。*/
+int32_t hex_immediate(char imm[256]){
+  int32_t hex[32] = {0};
+  int i_h = 31;
+  if(imm[0]!='0'||imm[1]!='x'||imm[10]!='\0') return -1;
+  for(int i=2; i<10; i++){
+    int32_t k = 0;
+    if(imm[i]=='f') k = 15;
+    else if(imm[i]=='e') k = 14;
+    else if(imm[i]=='d') k = 13;
+    else if(imm[i]=='c') k = 12;
+    else if(imm[i]=='b') k = 11;
+    else if(imm[i]=='a') k = 10;
+    else if(imm[i]=='9') k = 9;
+    else if(imm[i]=='8') k = 8;
+    else if(imm[i]=='7') k = 7;
+    else if(imm[i]=='6') k = 6;
+    else if(imm[i]=='5') k = 5;
+    else if(imm[i]=='4') k = 4;
+    else if(imm[i]=='3') k = 3;
+    else if(imm[i]=='2') k = 2;
+    else if(imm[i]=='1') k = 1;
+    else if(imm[i]=='0') k = 0;
+    else return -1;
+    for(int j=0; j<4; j++){
+      hex[i_h-j] = (k>>(3-j))&1;
+    }
+    i_h = i_h-4;
+  }
+  int32_t r = 0;
+  for(int i=0; i<32; i++){
+    if(i==31&&hex[31]==1) r = r-2147483648;
+    else{
+      r = r+(hex[i]<<i);
+    }
+  }
+  return r;
+}
+
+/* プロトタイプ宣言。*/
+signed char instruction(char t[256]);
+
+signed char re_instruction(char r_t[256], char r_s[256]){
+  int i = 0;
+  for (; r_s[i]!='\0'; i++){
+    s[i] = r_s[i];
+  }
+  s[i] = '\0';
+  i_s = 0;
+  return instruction(r_t);
+}
+
 signed char labeling(char t[256]){
-  int i_t = 0;
-  while(t[i_t]!=':') i_t++;
-  t[i_t] = '\0';
-  // indexのインクリメントは実際にメモリに書き込むとき。
-  if(mode==0) add_list(&labels, t, text_address);
-  else if(mode==1) add_list(&labels, t, data_address);
+  // label_textは回収済み。ズレをnopで埋めて合わせる。
+  if(mode==0){
+    int32_t goal = search_list(labels, t);
+    if(goal<0||text_address>goal) return -1;
+    while(text_address<goal){
+      if(re_instruction("nop", "")<0) return -1;
+    }
+  }
+  else if(mode==1){
+    add_list(&labels, t, data_address);
+  }
+  else return -1;
   return 0;
 }
 
-/* 増やそうな */
 signed char directive(char t[256]){
   if(eqlstr(t,".data")==0) mode = 1;
   else if(eqlstr(t,".text")==0) mode = 0;
@@ -151,12 +177,22 @@ signed char directive(char t[256]){
     /* 外部関数実装時に書くか */
   }
   else if(eqlstr(t,".word")==0){
-    /* 書くだけ。はよ書け。これ書かな la 実装しても使われへん。*/
-    /*
     char imm[256];
     signed char i = operand(&imm);
-    while()
-    */
+    while(i==0){
+      int j = index_memory(data_address);
+      int32_t k = hex_immediate(imm);
+      if(j<0||(eqlstr(imm,"0xffffffff")!=0&&k==-1)) return -1;
+      store_memory(j, k);
+      data_address = data_address+4;
+      i = operand(&imm);
+    }
+    if(i!=1) return -1;
+    int j = index_memory(data_address);
+    int32_t k = hex_immediate(imm);
+    if(j<0||(eqlstr(imm,"0xffffffff")!=0&&k==-1)) return -1;
+    store_memory(j, k);
+    data_address = data_address+4;
   }
   return 0;
 }
@@ -857,6 +893,26 @@ signed char instruction(char t[256]){
       store_text(i,type_J);
       text_address = text_address+4;
     }
+    // jal min_caml_print_int
+    else if(eqlstr(rd, "min_caml_print_int")==0){
+      if(re_instruction("li", "t1, 48")<0) return -1;
+      if(re_instruction("txbu", "t1")<0) return -1;
+      if(re_instruction("li", "t1, 120")<0) return -1;
+      if(re_instruction("txbu", "t1")<0) return -1;
+      if(re_instruction("mv", "t1, a0")<0) return -1;
+      if(re_instruction("li", "t2, 28")<0) return -1;
+      if(re_instruction("li", "t3, 10")<0) return -1;
+      if(re_instruction("srl", "a0, a0, t2")<0) return -1;
+      if(re_instruction("andi", "a0, a0, 15")<0) return -1;
+      if(re_instruction("blt", "a0, t3, 8")<0) return -1;
+      if(re_instruction("addi", "a0, a0, 7")<0) return -1;
+      if(re_instruction("addi", "a0, a0, 48")<0) return -1;
+      if(re_instruction("txbu", "a0")<0) return -1;
+      if(re_instruction("beq", "t2, zero, 16")<0) return -1;
+      if(re_instruction("addi", "t2, t2, -4")<0) return -1;
+      if(re_instruction("mv", "a0, t1")<0) return -1;
+      if(re_instruction("jal", "zero, -36")<0) return -1;
+    }
     // ラベルの場合
     else{
       int32_t address = search_list(labels,rd);
@@ -920,6 +976,28 @@ signed char instruction(char t[256]){
     int i = index_text(text_address);
     if(i<0||type_I.rd_index<0||type_I.rs1_index<0||type_I.imm==1048576) return -1;
     store_text(i,type_I);
+    text_address = text_address+4;
+  }
+  else if(eqlstr(t,"rxbu")==0){
+    char rd[256];
+    if(operand(&rd)!=1) return -1;
+    struct instruction type_X;
+    type_X.opcode = 0b0001011;
+    type_X.rd_index = index_register(rd);
+    int i = index_text(text_address);
+    if(i<0||type_X.rd_index<0) return -1;
+    store_text(i,type_X);
+    text_address = text_address+4;
+  }
+  else if(eqlstr(t,"txbu")==0){
+    char rs1[256];
+    if(operand(&rs1)!=1) return -1;
+    struct instruction type_X;
+    type_X.opcode = 0b0011011;
+    type_X.rs1_index = index_register(rs1);
+    int i = index_text(text_address);
+    if(i<0||type_X.rs1_index<0) return -1;
+    store_text(i,type_X);
     text_address = text_address+4;
   }
   else if(eqlstr(t,"li")==0){
@@ -1021,29 +1099,12 @@ signed char instruction(char t[256]){
   // ret -> jalr zero, ra, 0
   else if(eqlstr(t,"ret")==0){
     if(s[i_s]!='\0') return -1;
-    struct instruction type_I;
-    type_I.opcode = 0b1100111;
-    type_I.funct3 = 0b000;
-    type_I.rd_index = index_register("zero");
-    type_I.rs1_index = index_register("ra");
-    type_I.imm = 0;
-    int i = index_text(text_address);
-    if(i<0) return -1;
-    store_text(i,type_I);
-    text_address = text_address+4;
+    if(re_instruction("jalr", "zero, ra, 0")<0) return -1;
   }
   // nop -> addi zero, zero, 0
   else if(eqlstr(t,"nop")==0){
-    struct instruction type_I;
-    type_I.opcode = 0b0010011;
-    type_I.funct3 = 0b000;
-    type_I.rd_index = index_register("zero");
-    type_I.rs1_index = index_register("zero");
-    type_I.imm = 0;
-    int i = index_text(text_address);
-    if(i<0) return -1;
-    store_text(i,type_I);
-    text_address = text_address+4;
+    if(s[i_s]!='\0') return -1;
+    if(re_instruction("addi", "zero, zero, 0")<0) return -1;
   }
   else if(eqlstr(t,"halt")==0){
     if(s[i_s]!='\0') return -1;
@@ -1060,14 +1121,13 @@ signed char instruction(char t[256]){
 
 signed char parse(char *file_name){
 
-  init_parser();
+  init_parser(file_name);
 
   FILE *fp;
   fp = fopen(file_name, "r");
   if(fp==NULL) return -1;
 
   while(fgets(s,256,fp)!=NULL){
-
     /*　コメントアウト部分、ついでに末尾の改行も消しとこ */
     while(s[i_s]!='\0'){
       if(s[i_s]=='\n'||s[i_s]=='#'){
@@ -1092,11 +1152,12 @@ signed char parse(char *file_name){
     white_skip();
 
     /* parse errorが出たときはこれを使ってどこでerror吐いてるか確認すると幸せになれるかも。*/
-     printf("%s\n", t);
+    // printf("%s\n", t);
     /* 切り出した先頭を見て、label:, .uouo, instruction に場合分け */
     if(t[0]=='\0'){
     }
     else if(t[i_t-1]==':'){
+      t[i_t-1] = '\0';
       if(labeling(t)<0){
         fclose(fp);
         delete_list(labels);

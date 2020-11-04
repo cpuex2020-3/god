@@ -3,6 +3,7 @@
 #include "instruction.h"
 
 int32_t pc;
+int32_t uart;
 void show_registers();  // x0-x31を出力。
 
 // simulatorの最初と最後に実行。

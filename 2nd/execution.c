@@ -196,15 +196,38 @@ signed char execute(struct instruction instruction){
     }
     else return -1;
   }
+  // rxbu
+  else if(instruction.opcode==0b0001011){
+    int32_t rd = load_regster(instruction.rd_index)&0xffffff00;
+    if(instruction.rd_index!=0) store_register(instruction.rd_index, rd+uart);
+    pc = pc+4;
+  }
+  // txbu
+  else if(instruction.opcode==0b0011011){
+    uart = load_regster(instruction.rs1_index)&0x000000ff;
+    pc = pc+4;
+  }
   else return -1;
   return 0;
 };
 
 signed char step(){
+  printf("pc    : %d\n\n", pc);
   show_registers();
+  printf("\nUART  : %d\n\n", uart);
+
+  uart = 0;
+
   int i = index_text(pc);
   if(i<0) return -1;
   struct instruction instruction = load_text(i);
+
+  if(instruction.opcode==0b0001011){
+    printf("plz UART for rxbu : ");
+    scanf("%d\n", &uart);
+    if(uart<0||uart>=256) return -1;
+  }
+
   if(execute(instruction)<0) return -1;
   return 0;
 }
