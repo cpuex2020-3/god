@@ -6,7 +6,7 @@
 #include "assembler.h"
 #include "assembly.h"
 
-#define size_memory 10000 // text,data,heap,stack領域それぞれのword数(int32_t)。
+#define size_memory 16384 // text,data,heap,stack領域それぞれのword数(int32_t)。
 
 int main(int argc, char *argv[]){
   if(init_data(size_memory)<0){

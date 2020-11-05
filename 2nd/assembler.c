@@ -30,7 +30,7 @@ signed char binary(struct instruction instruction){
   else if(instruction.opcode==0b0100011){
     print_uo(instruction.imm>>5, 7);
     print_uo(instruction.rs2_index, 5);
-    print_uo(instruction.rd_index, 5);
+    print_uo(instruction.rs1_index, 5);
     print_uo(instruction.funct3, 3);
     print_uo(instruction.imm, 5);
     print_uo(instruction.opcode, 7);
