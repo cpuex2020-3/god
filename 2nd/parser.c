@@ -1096,6 +1096,48 @@ signed char instruction(char t[256]){
     store_text(i,type_I);
     text_address = text_address+4;
   }
+  else if(eqlstr(t,"j")==0){
+    char label[256];
+    if(operand(&label)!=1) return -1;
+    else{
+      int32_t address = search_list(labels,label);
+      if(address<0) return -1;
+      int32_t distance = address - text_address;
+      // jalで飛べる場合は jal zero, distance。
+      if(-1048576<=distance&&distance<1048576){
+        struct instruction type_J;
+        type_J.opcode = 0b1101111;
+        type_J.rd_index = index_register("zero");
+        type_J.imm = distance;
+        int i = index_text(text_address);
+        if(i<0) return -1;
+        store_text(i,type_J);
+        text_address = text_address+4;
+      }
+      // 飛べない場合は auipc t1, uo -> jal zero, t1, uouo。本来は jal ではなく call を使う。
+      else{
+        distance = distance-4;
+        int32_t dis_lui = distance>>12;
+        struct instruction type_U;
+        type_U.opcode = 0b0010111;
+        type_U.rd_index = index_register("t1");
+        type_U.imm = dis_lui;
+        int i = index_text(text_address);
+        if(i<0) return -1;
+        store_text(i,type_U);
+        text_address = text_address+4;
+        struct instruction type_I;
+        type_I.opcode = 0b1100111;
+        type_I.funct3 = 0b000;
+        type_I.rd_index = index_register("zero");
+        type_I.rs1_index = index_register("t1");
+        type_I.imm = distance-(dis_lui<<12);
+        i = index_text(text_address);
+        store_text(i,type_I);
+        text_address = text_address+4;
+      }
+    }
+  }
   // ret -> jalr zero, ra, 0
   else if(eqlstr(t,"ret")==0){
     if(s[i_s]!='\0') return -1;

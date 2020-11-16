@@ -52,7 +52,7 @@ output_binaryの機械語は人間には読みづらいので、アセンブリ�
 	jal ra, distance。
 	収まらないならdistanceをdistance-4に更新して、
 	auipc t1, (distance>>12)
-	jalr rd, t1, (distance-((distance>>12)<<12))
+	jalr ra, t1, (distance-((distance>>12)<<12))
 	に展開している。
 	本来なら収まらない場合はjal label_textではなくcall label_textの仕事らしい。
 ・jalr rs1
