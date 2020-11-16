@@ -3,9 +3,7 @@
 #include "instruction.h"
 #include "data.h"
 
-FILE *fp;
-
-signed char assembly(struct instruction instruction){
+signed char assembly(struct instruction instruction, FILE *fp){
   // HALT Fmt:X
   if(instruction.opcode==0b0000000){
     fprintf(fp, "halt\n");
@@ -174,12 +172,12 @@ signed char assembly(struct instruction instruction){
 };
 
 signed char post_parser(char *output_file_s){
-  fp = fopen(output_file_s, "w");
+  FILE *fp = fopen(output_file_s, "w");
   if(fp==NULL) return -1;
   signed char j = 0;
   for(size_t i = 0 ; j<2; i++){
     struct instruction instruction = load_text(i);
-    j = j+assembly(instruction);
+    j = j+assembly(instruction, fp);
     if(j<0){
       fclose(fp);
       return -1;

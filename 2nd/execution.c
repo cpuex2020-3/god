@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include "instruction.h"
 #include "data.h"
+#include "assembly.h"
 
 signed char execute(struct instruction instruction){
   if(instruction.opcode==0b0000000){
@@ -229,7 +230,10 @@ signed char step(){
     if(uart<0||uart>=256) return -1;
   }
 
+  printf("next execution : ");
+  if(assembly(instruction, stdout)<0) return -1;
   if(execute(instruction)<0) return -1;
+
   return 0;
 }
 

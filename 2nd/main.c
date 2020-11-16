@@ -33,7 +33,7 @@ int main(int argc, char *argv[]){
       if(op==0&&argv[2][op]!='-'){
         break;
       }
-      else if(op!=0&&argv[2][op]!='b'&&output<argc){
+      else if(op!=0&&argv[2][op]=='b'&&output<argc){
         if(assemble(argv[output])<0){
           printf("assemble error\n");
           free_memory();
@@ -42,7 +42,7 @@ int main(int argc, char *argv[]){
         printf("min_caml_start address : %d\n", pc);
         output = output+1;
       }
-      else if(op!=0&&argv[2][op]!='a'&&output<argc){
+      else if(op!=0&&argv[2][op]=='a'&&output<argc){
         if(post_parser(argv[output])<0){
           printf("assembly error\n");
           free_memory();
@@ -50,7 +50,7 @@ int main(int argc, char *argv[]){
         }
         printf("min_caml_start index   : %d\n", pc/4);
       }
-      else if(op!=0&&argv[2][op]!='s'){
+      else if(op!=0&&argv[2][op]=='s'){
         char c = '\n';
         while(c=='\n'){
           c = getchar();
@@ -62,7 +62,6 @@ int main(int argc, char *argv[]){
         }
       }
       else{
-        break;
       }
       op = op+1;
     }

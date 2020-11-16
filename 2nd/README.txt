@@ -5,7 +5,7 @@ makeするとgod_fibという実行ファイルができます。使い方は次
 ./god_fib input (-option) (output_binary,output_assembly)
 
 argがinputだけの場合：
-inputを実行します。txbuされた8bitはcharとしてprintfされます。
+inputを初めてhaltを実行するまで実行します。txbuされた8bitはcharとしてprintfされます。
 
 optionとして使えるのは「b」「a」「s」の三つです。
 bを指定：output_binaryにバイナリを吐きます。min_caml_startのアドレス(=PCの初期値)を標準出力に吐きます。
@@ -15,7 +15,7 @@ sを指定：inputをステップ実行します。
 オプションは複数同時に指定できます。
 ・bとaの片方のみを指定した場合、outputファイルの指定は1つで構いません。
 ・bまたはaを指定した状態で、かつsを指定しなければ、実行はされません。
-・オプションの処理は指定された順に行うので、sは最後にするのがオススメです。
+・オプションの処理は指定された順に行い、outputファイルも順に用います。そのためsは最後にするのがオススメです。
 
 
 メモ
