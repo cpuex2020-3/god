@@ -20,5 +20,7 @@ beq  t2, zero, 16
 addi t2, t2, -4
 mv   a0, t1
 jal  zero, -36
+li   t1, 10
+txbu t1
 
 ret

@@ -15,6 +15,7 @@ uouo:
   addi sp, sp, 16
   jal wawa
 min_caml_start:
+  jal min_caml_print_int
   li s0, 30
   li s0, -1234
   li s0, 123456

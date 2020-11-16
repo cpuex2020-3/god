@@ -2,14 +2,20 @@
 makeするとgod_fibという実行ファイルができます。使い方は次の通り。
 また機能が増えてきたらオプションで変更するようにします。
 
-./god_fib input (output_binary) (output_assembly)
+./god_fib input (-option) (output_binary,output_assembly)
 
 argがinputだけの場合：
-inputをstep実行します。
-output_binaryもある場合：
-inputを機械語にしてoutput_binaryに出します。min_caml_startのアドレス(=PCの初期値)を標準出力に吐きます。
-output_assemblyまである場合：
-output_binaryの機械語は人間には読みづらいので、アセンブリに戻してoutput_assemblyに出します。入力したアセンブリが内部でどう処理されているのか見えるので、きっとデバッグに便利です。アセンブリしかいらないのなら、同じ名前のファイルを指定してください。
+inputを実行します。txbuされた8bitはcharとしてprintfされます。
+
+optionとして使えるのは「b」「a」「s」の三つです。
+bを指定：output_binaryにバイナリを吐きます。min_caml_startのアドレス(=PCの初期値)を標準出力に吐きます。
+aを指定：output_assemblyにinputから変換された実際に実行される命令列を吐きます。min_caml_startが何命令目を指すか(=実行が開始される位置)を標準出力に吐きます。
+sを指定：inputをステップ実行します。
+
+オプションは複数同時に指定できます。
+・bとaの片方のみを指定した場合、outputファイルの指定は1つで構いません。
+・bまたはaを指定した状態で、かつsを指定しなければ、実行はされません。
+・オプションの処理は指定された順に行うので、sは最後にするのがオススメです。
 
 
 メモ
@@ -57,6 +63,8 @@ output_binaryの機械語は人間には読みづらいので、アセンブリ�
 	本来なら収まらない場合はjal label_textではなくcall label_textの仕事らしい。
 ・jalr rs1
 	jalr ra, rs1, 0
+・j label_text
+	jal zero, label_text
 ・branch rs1, rs2, label_text
 	jal label_text に同じ。
 ・li rd, imm[31:0]

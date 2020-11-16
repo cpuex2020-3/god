@@ -88,7 +88,7 @@ struct label_list* get_text_labels(char *file_name){
       }
       else if(eqlstr(t,"jal")==0){
         if(eqlstr(s+i_s,"min_caml_print_int")==0){
-          text_address = text_address + 68;
+          text_address = text_address + 76;
         }
         else text_address = text_address + 8;
       }

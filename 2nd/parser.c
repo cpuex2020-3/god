@@ -912,6 +912,8 @@ signed char instruction(char t[256]){
       if(re_instruction("addi", "t2, t2, -4")<0) return -1;
       if(re_instruction("mv", "a0, t1")<0) return -1;
       if(re_instruction("jal", "zero, -36")<0) return -1;
+      if(re_instruction("li", "t1, 10")<0) return -1;
+      if(re_instruction("txbu", "t1")<0) return -1;
     }
     // ラベルの場合
     else{

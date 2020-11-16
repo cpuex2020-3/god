@@ -14,38 +14,57 @@ int main(int argc, char *argv[]){
     free_memory();
     return 0;
   }
-
   if(parse(argv[1])<0){
     printf("parse error\n");
     free_memory();
     return 0;
   }
 
-  if(argc>2){
-    if(assemble(argv[2])<0){
-      printf("assemble error\n");
+  if(argc==2){
+    if(matomete()<0){
+      printf("execution error\n");
       free_memory();
       return 0;
     }
-    if(argc==4){
-      if(post_parser(argv[3])<0){
-        printf("assembly error\n");
-        free_memory();
-        return 0;
-      }
-    }
-    printf("min_caml_start : %d\n", pc);
   }
-
   else{
-    char c = '\n';
-    while(c=='\n'){
-      c = getchar();
-      if(step()<0){
-        printf("execution error\n");
-        free_memory();
-        return 0;
+    int op = 0, output = 3;
+    while(argv[2][op]!='\0'){
+      if(op==0&&argv[2][op]!='-'){
+        break;
       }
+      else if(op!=0&&argv[2][op]!='b'&&output<argc){
+        if(assemble(argv[output])<0){
+          printf("assemble error\n");
+          free_memory();
+          return 0;
+        }
+        printf("min_caml_start address : %d\n", pc);
+        output = output+1;
+      }
+      else if(op!=0&&argv[2][op]!='a'&&output<argc){
+        if(post_parser(argv[output])<0){
+          printf("assembly error\n");
+          free_memory();
+          return 0;
+        }
+        printf("min_caml_start index   : %d\n", pc/4);
+      }
+      else if(op!=0&&argv[2][op]!='s'){
+        char c = '\n';
+        while(c=='\n'){
+          c = getchar();
+          if(step()<0){
+            printf("execution error\n");
+            free_memory();
+            return 0;
+          }
+        }
+      }
+      else{
+        break;
+      }
+      op = op+1;
     }
   }
 

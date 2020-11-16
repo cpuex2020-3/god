@@ -232,3 +232,25 @@ signed char step(){
   if(execute(instruction)<0) return -1;
   return 0;
 }
+
+signed char matomete(){
+  for(int i = index_text(pc); ; uart = 0, i = index_text(pc)){
+    uart = 0;
+    if(i<0) return -1;
+    struct instruction instruction = load_text(i);
+    if(instruction.opcode==0b0000000){
+      break;
+    }
+    else if(instruction.opcode==0b0001011){
+      printf("plz UART for rxbu : ");
+      scanf("%d\n", &uart);
+      if(uart<0||uart>=256) return -1;
+    }
+    if(execute(instruction)<0) return -1;
+    if(instruction.opcode==0b0011011){
+      printf("%c", uart);
+    }
+  }
+
+  return 0;
+}
