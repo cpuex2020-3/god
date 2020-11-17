@@ -37,9 +37,9 @@ signed char init_data(int32_t size){
       return -1;
     }
   }
-  registers[3] = (size_memory*1)*4; // gp = data領域の先頭。本来は真ん中。
-  registers[5] = (size_memory*2)*4; // hp = heap領域の先頭。
-  registers[2] = (size_memory*3)*4; // sp = stack領域の先頭。本来は末尾。
+  registers[3] = (size_memory*0)*4; // gp = data領域の先頭。本来は真ん中。
+  registers[5] = (size_memory*1)*4; // hp = heap領域の先頭。
+  registers[2] = (size_memory*2)*4; // sp = stack領域の先頭。本来は末尾。
   return 0;
 }
 
@@ -94,7 +94,7 @@ void store_text(int index, struct instruction instruction){
 }
 
 int index_memory(int32_t address){
-  if(address<size_memory*4||size_memory*4*4<=address||address%4!=0){
+  if(address<0||size_memory*4*3<=address||address%4!=0){
     return -1;
   }
   return address/4;
@@ -103,8 +103,8 @@ int index_memory(int32_t address){
 int32_t load_memory(int index){
   int32_t value = 0;
   for (size_t i=0; i<3; i++){
-    if(index<size_memory*(i+2)){
-      value = rest_memory[i][index-size_memory*(i+1)];
+    if(index<size_memory*(i+1)){
+      value = rest_memory[i][index-size_memory*i];
       break;
     }
   }
@@ -113,8 +113,8 @@ int32_t load_memory(int index){
 
 void store_memory(int index, int32_t value){
   for (size_t i=0; i<3; i++){
-    if(index<size_memory*(i+2)){
-      rest_memory[i][index-size_memory*(i+1)] = value;
+    if(index<size_memory*(i+1)){
+      rest_memory[i][index-size_memory*i] = value;
       break;
     }
   }
