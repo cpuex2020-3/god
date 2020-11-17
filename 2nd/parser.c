@@ -893,28 +893,6 @@ signed char instruction(char t[256]){
       store_text(i,type_J);
       text_address = text_address+4;
     }
-    // jal min_caml_print_int
-    else if(eqlstr(rd, "min_caml_print_int")==0){
-      if(re_instruction("li", "t1, 48")<0) return -1;
-      if(re_instruction("txbu", "t1")<0) return -1;
-      if(re_instruction("li", "t1, 120")<0) return -1;
-      if(re_instruction("txbu", "t1")<0) return -1;
-      if(re_instruction("mv", "t1, a0")<0) return -1;
-      if(re_instruction("li", "t2, 28")<0) return -1;
-      if(re_instruction("li", "t3, 10")<0) return -1;
-      if(re_instruction("srl", "a0, a0, t2")<0) return -1;
-      if(re_instruction("andi", "a0, a0, 15")<0) return -1;
-      if(re_instruction("blt", "a0, t3, 8")<0) return -1;
-      if(re_instruction("addi", "a0, a0, 7")<0) return -1;
-      if(re_instruction("addi", "a0, a0, 48")<0) return -1;
-      if(re_instruction("txbu", "a0")<0) return -1;
-      if(re_instruction("beq", "t2, zero, 16")<0) return -1;
-      if(re_instruction("addi", "t2, t2, -4")<0) return -1;
-      if(re_instruction("mv", "a0, t1")<0) return -1;
-      if(re_instruction("jal", "zero, -36")<0) return -1;
-      if(re_instruction("li", "t1, 10")<0) return -1;
-      if(re_instruction("txbu", "t1")<0) return -1;
-    }
     // ラベルの場合
     else{
       int32_t address = search_list(labels,rd);
@@ -1168,6 +1146,65 @@ signed char parse(char *file_name){
   init_parser(file_name);
 
   FILE *fp;
+  fp = fopen("external.s", "r");
+  if(fp==NULL) return -1;
+
+  while(fgets(s,256,fp)!=NULL){
+    /*　コメントアウト部分、ついでに末尾の改行も消しとこ */
+    while(s[i_s]!='\0'){
+      if(s[i_s]=='\n'||s[i_s]=='#'){
+        i_s--;
+        while(0<=i_s&&(s[i_s]==9||s[i_s]==32)) i_s--;
+        s[i_s+1]='\0';
+        break;
+      }
+      i_s++;
+    }
+    i_s = 0;
+
+    /* 先頭の切り出し */
+    char t[256];
+    int i_t = 0;
+    white_skip();
+    while(s[i_s]!=9&&s[i_s]!=32&&s[i_s]!='\n'&&s[i_s]!='\0'){
+      t[i_t] = s[i_s];
+      i_s++; i_t++;
+    }
+    t[i_t] = '\0';
+    white_skip();
+
+    /* parse errorが出たときはこれを使ってどこでerror吐いてるか確認すると幸せになれるかも。*/
+    // printf("%s\n", t);
+    /* 切り出した先頭を見て、label:, .uouo, instruction に場合分け */
+    if(t[0]=='\0'){
+    }
+    else if(t[i_t-1]==':'){
+      t[i_t-1] = '\0';
+      if(labeling(t)<0){
+        fclose(fp);
+        delete_list(labels);
+        return -1;
+      }
+    }
+    else if(t[0]=='.'){
+      if(directive(t)<0){
+        fclose(fp);
+        delete_list(labels);
+        return -1;
+      }
+    }
+    else{
+      if(instruction(t)<0){
+        fclose(fp);
+        delete_list(labels);
+        return -1;
+      }
+    }
+
+    i_s = 0;
+  }
+  fclose(fp);
+
   fp = fopen(file_name, "r");
   if(fp==NULL) return -1;
 
@@ -1225,6 +1262,7 @@ signed char parse(char *file_name){
 
     i_s = 0;
   }
+  fclose(fp);
 
   /* 末尾にもhaltを足します。*/
   /* jalr zero, ra, 0にした方が行儀が良さそうだけど、こっちの方が便利なので。*/
@@ -1232,7 +1270,6 @@ signed char parse(char *file_name){
   halt.opcode = 0b0000000;
   int i = index_text(text_address);
   if(i<0){
-    fclose(fp);
     delete_list(labels);
     return -1;
   }
@@ -1240,13 +1277,11 @@ signed char parse(char *file_name){
   /* min_caml_startから実行を始めます。 */
   int32_t main = search_list(labels,"min_caml_start");
   if(main<0){
-    fclose(fp);
     delete_list(labels);
     return -1;
   }
   pc = pc + main;
 
-  fclose(fp);
   delete_list(labels);
   return 0;
 }

@@ -200,6 +200,9 @@ signed char execute(struct instruction instruction){
   }
   // rxbu
   else if(instruction.opcode==0b0001011){
+    printf("plz UART for rxbu : ");
+    scanf("%d\n", &uart);
+    if(uart<0||uart>=256) return -1;
     int32_t rd = load_regster(instruction.rd_index)&0xffffff00;
     if(instruction.rd_index!=0) store_register(instruction.rd_index, rd+uart);
     pc = pc+4;
@@ -224,12 +227,6 @@ signed char step(){
   if(i<0) return -1;
   struct instruction instruction = load_text(i);
 
-  if(instruction.opcode==0b0001011){
-    printf("plz UART for rxbu : ");
-    scanf("%d\n", &uart);
-    if(uart<0||uart>=256) return -1;
-  }
-
   printf("next execution : ");
   if(assembly(instruction, stdout)<0) return -1;
   if(execute(instruction)<0) return -1;
@@ -242,19 +239,13 @@ signed char matomete(){
     uart = 0;
     if(i<0) return -1;
     struct instruction instruction = load_text(i);
+    if(execute(instruction)<0) return -1;
     if(instruction.opcode==0b0000000){
       break;
     }
-    else if(instruction.opcode==0b0001011){
-      printf("plz UART for rxbu : ");
-      scanf("%d\n", &uart);
-      if(uart<0||uart>=256) return -1;
-    }
-    if(execute(instruction)<0) return -1;
-    if(instruction.opcode==0b0011011){
+    else if(instruction.opcode==0b0011011){
       printf("%c", uart);
     }
   }
-
   return 0;
 }
