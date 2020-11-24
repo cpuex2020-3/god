@@ -1,8 +1,8 @@
 
-makeするとgod_fibという実行ファイルができます。使い方は次の通り。
+makeするとgod_floatという実行ファイルができます。使い方は次の通り。
 また機能が増えてきたらオプションで変更するようにします。
 
-./god_fib input (-option) (output_binary,output_assembly)
+./god_float input (-option) (output_binary,output_assembly)
 
 argがinputだけの場合：
 inputを初めてhaltを実行するまで実行します。txbuされた8bitはcharとしてprintfされます。
@@ -21,7 +21,7 @@ sを指定：inputをステップ実行します。
 メモ
 ・mainの先頭の#define size_memoryでメモリの大きさの調整ができます。特に機械語を吐かせる前には確認しよう。signed32bitを超えない数字ならメモリを確保できる限り使えるはずです。命令数より十分大きい数字にしとくと安心。
 ・parse errorが出たときは、parser.cのparseという関数においてtを取得した直後のところにprintf("%s\n",t);を入れると、どの行の処理中にerrorを吐いたかわかるので幸せになれるかも。
-・関数呼出規約からのリマインドですが、TemporaryはArgumentに使わないでね。詳しく知りたい場合は擬似命令の解決の項を眺めましょう。
+・関数呼出規約からのリマインドですが、TemporaryはArgumentに使わないでね。あとt1はアセンブリが使うためのレジスタなのでコンパイラは使わないでね。
 
 
 制限
@@ -63,20 +63,23 @@ sを指定：inputをステップ実行します。
 	jalr zero, ra, 0
 ・nop
 	addi zero, zero, 0
+・fmv rd, rs1
+	fsgnj.s rd, rs1, rs1
+・fabs rd, rs1
+	fsgnjx.s rd, rs1, rs1
+・fneg rd, rs1
+	fsgnjn.s rd, rs1, rs1
 
 
 各ファイルの説明
 
-god_fibに使うやつ。
 main.c：はい。メモリの大きさはここで決まってます。エラー表示が雑でごめんなさい。
+external.s：外部関数の中身。もらったアセンブリファイルの先頭にこれを付け足して処理します。
 instruction：命令を表す構造体instructionを定義しています。
-data：レジスタとメモリを抽象化しています。pc以外のレジスタやメモリの初期値はここで決まってます。
+data：レジスタとメモリを抽象化しています。pcを除く各レジスタやメモリの初期値はここで決まってます。
 label：.textのラベルに関して、定義される行より前の行で使えるようにするやつ。
-parser：入力されたアセンブリをラベルやら擬似命令やら解決して、instructionとしてtext領域に格納するえらいやつ。一番大変なとこ。
+parser：入力されたアセンブリをラベルやら擬似命令やら解決して、instructionとしてtext領域に格納するえらいやつ。
 execution：text領域からpcが指す命令を持ってきて実行します。
 assembler：instructionは機械語と1対1対応するので、出力するだけの簡単なお仕事。
-assembly：instructonからアセンブリに戻します。
-external.s：外部関数の中身。もらったアセンブリファイルの先頭にこれを付け足して処理します。
-
-god_fibに使わないやつ。
-binary_to_hex.c：標準入力から2進数の列をもらって16進数に直してくれる子です。おまけ。Makefileに書いてないので自分でgcc binary_to_hex.cしような。
+assembly：メモリ内のinstructonを簡単なアセンブリに戻します。
+fdata：dataの浮動小数点数バージョン。

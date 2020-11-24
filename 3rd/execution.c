@@ -71,6 +71,62 @@ signed char f_execute(struct instruction instruction){
         float rs1 = f_load_regster(instruction.rs1_index);
         f_store_register(instruction.rd_index, sqrtf(rs1));
       }
+      else return -1;
+    }
+    else if(instruction.funct7==0b0010000){
+      float rs1 = f_load_regster(instruction.rs1_index);
+      float rs2 = f_load_regster(instruction.rs2_index);
+      // fsgnj.s
+      if(instruction.funct3==0b000){
+        int32_t int1 = (*((int32_t *)&rs1))&0x7fffffff;
+        int32_t int2 = (*((int32_t *)&rs2))&0x80000000;
+        int32_t value = int1|int2;
+        f_store_register(instruction.rd_index, *((float *)&value));
+      }
+      // fsgnjn.s
+      else if(instruction.funct3==0b001){
+        int32_t int1 = (*((int32_t *)&rs1))&0x80000000;
+        int32_t int2 = (*((int32_t *)&rs2))&0x80000000;
+        int32_t value = int1^int2;
+        f_store_register(instruction.rd_index, *((float *)&value));
+      }
+      // fsgnjx.s
+      else if(instruction.funct3==0b010){
+        int32_t int1 = (*((int32_t *)&rs1));
+        int32_t int2 = (*((int32_t *)&rs2))&0x80000000;
+        int32_t value = int1^int2;
+        f_store_register(instruction.rd_index, *((float *)&value));
+      }
+      else return -1;
+    }
+    // fcvt.s.w
+    else if(instruction.funct7==0b1101000){
+      if(instruction.funct3==rm&&instruction.rs2_index==0b00000){
+        int32_t rs1 = load_regster(instruction.rs1_index);
+        f_store_register(instruction.rd_index, (float)rs1);
+      }
+      else return -1;
+    }
+    else if(instruction.funct7==0b1010000){
+      int32_t value = 0;
+      float rs1 = f_load_regster(instruction.rs1_index);
+      float rs2 = f_load_regster(instruction.rs2_index);
+      // feq.s
+      if(instruction.funct3==0b010){
+        if(rs1==rs2) value = 1;
+        store_register(instruction.rd_index, value);
+      }
+      // flt.s
+      else if(instruction.funct3==0b001){
+        if(rs1<rs2) value = 1;
+        store_register(instruction.rd_index, value);
+      }
+      // fle.s
+      else if(instruction.funct3==0b000){
+        if(rs1<=rs2) value = 1;
+        store_register(instruction.rd_index, value);
+      }
+      else return -1;
     }
     else return -1;
   }

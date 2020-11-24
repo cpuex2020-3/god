@@ -303,6 +303,159 @@ signed char f_instruction(char t[256]){
     store_text(i,type_R);
     text_address = text_address+4;
   }
+  else if(eqlstr(t,"fsgnj.s")==0){
+    char rd[256],rs1[256],rs2[256];
+    if(operand(&rd)!=0||operand(&rs1)!=0||operand(&rs2)!=1) return -1;
+    struct instruction type_R;
+    type_R.opcode = 0b1010011;
+    type_R.funct3 = 0b000;
+    type_R.funct7 = 0b0010000;
+    type_R.rd_index = f_index_register(rd);
+    type_R.rs1_index = f_index_register(rs1);
+    type_R.rs2_index = f_index_register(rs2);
+    int i = index_text(text_address);
+    if(i<0||type_R.rd_index<0||type_R.rs1_index<0||type_R.rs2_index<0) return -1;
+    store_text(i,type_R);
+    text_address = text_address+4;
+  }
+  else if(eqlstr(t,"fsgnjn.s")==0){
+    char rd[256],rs1[256],rs2[256];
+    if(operand(&rd)!=0||operand(&rs1)!=0||operand(&rs2)!=1) return -1;
+    struct instruction type_R;
+    type_R.opcode = 0b1010011;
+    type_R.funct3 = 0b001;
+    type_R.funct7 = 0b0010000;
+    type_R.rd_index = f_index_register(rd);
+    type_R.rs1_index = f_index_register(rs1);
+    type_R.rs2_index = f_index_register(rs2);
+    int i = index_text(text_address);
+    if(i<0||type_R.rd_index<0||type_R.rs1_index<0||type_R.rs2_index<0) return -1;
+    store_text(i,type_R);
+    text_address = text_address+4;
+  }
+  else if(eqlstr(t,"fsgnjx.s")==0){
+    char rd[256],rs1[256],rs2[256];
+    if(operand(&rd)!=0||operand(&rs1)!=0||operand(&rs2)!=1) return -1;
+    struct instruction type_R;
+    type_R.opcode = 0b1010011;
+    type_R.funct3 = 0b010;
+    type_R.funct7 = 0b0010000;
+    type_R.rd_index = f_index_register(rd);
+    type_R.rs1_index = f_index_register(rs1);
+    type_R.rs2_index = f_index_register(rs2);
+    int i = index_text(text_address);
+    if(i<0||type_R.rd_index<0||type_R.rs1_index<0||type_R.rs2_index<0) return -1;
+    store_text(i,type_R);
+    text_address = text_address+4;
+  }
+  else if(eqlstr(t,"fcvt.s.w")==0){
+    char rd[256],rs1[256];
+    if(operand(&rd)!=0||operand(&rs1)!=1) return -1;
+    struct instruction type_R;
+    type_R.opcode = 0b1010011;
+    type_R.funct3 = rm;
+    type_R.funct7 = 0b1101000;
+    type_R.rd_index = f_index_register(rd);
+    type_R.rs1_index = index_register(rs1);
+    type_R.rs2_index = 0b00000;
+    int i = index_text(text_address);
+    if(i<0||type_R.rd_index<0||type_R.rs1_index<0) return -1;
+    store_text(i,type_R);
+    text_address = text_address+4;
+  }
+  else if(eqlstr(t,"feq.s")==0){
+    char rd[256],rs1[256],rs2[256];
+    if(operand(&rd)!=0||operand(&rs1)!=0||operand(&rs2)!=1) return -1;
+    struct instruction type_R;
+    type_R.opcode = 0b1010011;
+    type_R.funct3 = 0b010;
+    type_R.funct7 = 0b1010000;
+    type_R.rd_index = index_register(rd);
+    type_R.rs1_index = f_index_register(rs1);
+    type_R.rs2_index = f_index_register(rs2);
+    int i = index_text(text_address);
+    if(i<0||type_R.rd_index<0||type_R.rs1_index<0||type_R.rs2_index<0) return -1;
+    store_text(i,type_R);
+    text_address = text_address+4;
+  }
+  else if(eqlstr(t,"flt.s")==0){
+    char rd[256],rs1[256],rs2[256];
+    if(operand(&rd)!=0||operand(&rs1)!=0||operand(&rs2)!=1) return -1;
+    struct instruction type_R;
+    type_R.opcode = 0b1010011;
+    type_R.funct3 = 0b001;
+    type_R.funct7 = 0b1010000;
+    type_R.rd_index = index_register(rd);
+    type_R.rs1_index = f_index_register(rs1);
+    type_R.rs2_index = f_index_register(rs2);
+    int i = index_text(text_address);
+    if(i<0||type_R.rd_index<0||type_R.rs1_index<0||type_R.rs2_index<0) return -1;
+    store_text(i,type_R);
+    text_address = text_address+4;
+  }
+  else if(eqlstr(t,"fle.s")==0){
+    char rd[256],rs1[256],rs2[256];
+    if(operand(&rd)!=0||operand(&rs1)!=0||operand(&rs2)!=1) return -1;
+    struct instruction type_R;
+    type_R.opcode = 0b1010011;
+    type_R.funct3 = 0b000;
+    type_R.funct7 = 0b1010000;
+    type_R.rd_index = index_register(rd);
+    type_R.rs1_index = f_index_register(rs1);
+    type_R.rs2_index = f_index_register(rs2);
+    int i = index_text(text_address);
+    if(i<0||type_R.rd_index<0||type_R.rs1_index<0||type_R.rs2_index<0) return -1;
+    store_text(i,type_R);
+    text_address = text_address+4;
+  }
+  // fmv rd, rs1 -> fsgnj.s rd, rs1, rs1
+  else if(eqlstr(t,"fmv")==0){
+    char rd[256],rs1[256];
+    if(operand(&rd)!=0||operand(&rs1)!=1) return -1;
+    struct instruction type_R;
+    type_R.opcode = 0b1010011;
+    type_R.funct3 = 0b000;
+    type_R.funct7 = 0b0010000;
+    type_R.rd_index = f_index_register(rd);
+    type_R.rs1_index = f_index_register(rs1);
+    type_R.rs2_index = f_index_register(rs1);
+    int i = index_text(text_address);
+    if(i<0||type_R.rd_index<0||type_R.rs1_index<0||type_R.rs2_index<0) return -1;
+    store_text(i,type_R);
+    text_address = text_address+4;
+  }
+  // fabs rd, rs1 -> fsgnjx.s rd, rs1, rs1
+  else if(eqlstr(t,"fabs")==0){
+    char rd[256],rs1[256];
+    if(operand(&rd)!=0||operand(&rs1)!=1) return -1;
+    struct instruction type_R;
+    type_R.opcode = 0b1010011;
+    type_R.funct3 = 0b010;
+    type_R.funct7 = 0b0010000;
+    type_R.rd_index = f_index_register(rd);
+    type_R.rs1_index = f_index_register(rs1);
+    type_R.rs2_index = f_index_register(rs1);
+    int i = index_text(text_address);
+    if(i<0||type_R.rd_index<0||type_R.rs1_index<0||type_R.rs2_index<0) return -1;
+    store_text(i,type_R);
+    text_address = text_address+4;
+  }
+  // fneg rd, rs1 -> fsgnjn.s rd, rs1, rs1
+  else if(eqlstr(t,"fneg")==0){
+    char rd[256],rs1[256];
+    if(operand(&rd)!=0||operand(&rs1)!=1) return -1;
+    struct instruction type_R;
+    type_R.opcode = 0b1010011;
+    type_R.funct3 = 0b001;
+    type_R.funct7 = 0b0010000;
+    type_R.rd_index = f_index_register(rd);
+    type_R.rs1_index = f_index_register(rs1);
+    type_R.rs2_index = f_index_register(rs1);
+    int i = index_text(text_address);
+    if(i<0||type_R.rd_index<0||type_R.rs1_index<0||type_R.rs2_index<0) return -1;
+    store_text(i,type_R);
+    text_address = text_address+4;
+  }
   else return -1;
   return 0;
 }
