@@ -327,6 +327,24 @@ signed char execute(struct instruction instruction){
     }
     else return -1;
   }
+  else if(instruction.opcode==0b1011011){
+    int32_t value = 0;
+    int32_t rs1 = load_regster(instruction.rs1_index);
+    if(instruction.funct7==0b0000000&&instruction.rs2_index==0b00000){
+      // mul10
+      if(instruction.funct3==0b000){
+        value = rs1*10;
+      }
+      // div10
+      else if(instruction.funct3==0b001){
+        value = rs1/10;
+      }
+      else return -1;
+    }
+    else return -1;
+    if(instruction.rd_index!=0) store_register(instruction.rd_index, value);
+    pc = pc+4;
+  }
   // rxbu
   else if(instruction.opcode==0b0001011){
     printf("plz UART for rxbu : ");

@@ -157,6 +157,19 @@ signed char assembly(struct instruction instruction, FILE *fp){
     fprintf(fp, "jalr ");
     fprintf(fp, " x%d, x%d, %d\n", instruction.rd_index, instruction.rs1_index, instruction.imm);
   }
+  // 10 Fmt:X
+  else if(instruction.opcode==0b1011011){
+    // mul10
+    if(instruction.funct3==0b000){
+      fprintf(fp, "mul10");
+    }
+    // div10
+    else if(instruction.funct3==0b001){
+      fprintf(fp, "div10");
+    }
+    else return -1;
+    fprintf(fp, " x%d, x%d\n", instruction.rd_index, instruction.rs1_index);
+  }
   // rxbu Fmt:X
   else if(instruction.opcode==0b0001011){
     fprintf(fp, "rxbu ");

@@ -1221,26 +1221,72 @@ signed char instruction(char t[256]){
     store_text(i,type_I);
     text_address = text_address+4;
   }
-  else if(eqlstr(t,"rxbu")==0){
-    char rd[256];
-    if(operand(&rd)!=1) return -1;
+  else if(eqlstr(t,"mul10")==0){
+    char rd[256],rs1[256];
+    if(operand(&rd)!=0||operand(&rs1)!=1) return -1;
     struct instruction type_X;
-    type_X.opcode = 0b0001011;
+    type_X.opcode = 0b1011011;
+    type_X.funct3 = 0b000;
+    type_X.funct7 = 0b0000000;
     type_X.rd_index = index_register(rd);
+    type_X.rs1_index = index_register(rs1);
+    type_X.rs2_index = 0b00000;
     int i = index_text(text_address);
-    if(i<0||type_X.rd_index<0) return -1;
+    if(i<0||type_X.rd_index<0||type_X.rs1_index<0) return -1;
     store_text(i,type_X);
     text_address = text_address+4;
   }
-  else if(eqlstr(t,"txbu")==0){
-    char rs1[256];
-    if(operand(&rs1)!=1) return -1;
+  else if(eqlstr(t,"div10")==0){
+    char rd[256],rs1[256];
+    if(operand(&rd)!=0||operand(&rs1)!=1) return -1;
     struct instruction type_X;
-    type_X.opcode = 0b0011011;
+    type_X.opcode = 0b1011011;
+    type_X.funct3 = 0b001;
+    type_X.funct7 = 0b0000000;
+    type_X.rd_index = index_register(rd);
     type_X.rs1_index = index_register(rs1);
+    type_X.rs2_index = 0b00000;
     int i = index_text(text_address);
-    if(i<0||type_X.rs1_index<0) return -1;
+    if(i<0||type_X.rd_index<0||type_X.rs1_index<0) return -1;
     store_text(i,type_X);
+    text_address = text_address+4;
+  }
+  // mod10 rd, rs1 は div10 t1, rs1 -> mul10 t1, t1 -> sub rd, rs1, t1 。
+  else if(eqlstr(t,"mod10")==0){
+    char rd[256],rs1[256];
+    if(operand(&rd)!=0||operand(&rs1)!=1) return -1;
+    struct instruction type_X_d;
+    type_X_d.opcode = 0b1011011;
+    type_X_d.funct3 = 0b001;
+    type_X_d.funct7 = 0b0000000;
+    type_X_d.rd_index = index_register("t1");
+    type_X_d.rs1_index = index_register(rs1);
+    type_X_d.rs2_index = 0b00000;
+    int i = index_text(text_address);
+    if(i<0||type_X_d.rd_index<0||type_X_d.rs1_index<0) return -1;
+    store_text(i,type_X_d);
+    text_address = text_address+4;
+    struct instruction type_X_m;
+    type_X_m.opcode = 0b1011011;
+    type_X_m.funct3 = 0b001;
+    type_X_m.funct7 = 0b0000000;
+    type_X_m.rd_index = index_register("t1");
+    type_X_m.rs1_index = index_register("t1");
+    type_X_m.rs2_index = 0b00000;
+    i = index_text(text_address);
+    if(i<0||type_X_m.rd_index<0||type_X_m.rs1_index<0) return -1;
+    store_text(i,type_X_m);
+    text_address = text_address+4;
+    struct instruction type_R;
+    type_R.opcode = 0b0110011;
+    type_R.funct3 = 0b000;
+    type_R.funct7 = 0b0100000;
+    type_R.rd_index = index_register(rd);
+    type_R.rs1_index = index_register(rs1);
+    type_R.rs2_index = index_register("t1");
+    i = index_text(text_address);
+    if(i<0||type_R.rd_index<0||type_R.rs1_index<0||type_R.rs2_index<0) return -1;
+    store_text(i,type_R);
     text_address = text_address+4;
   }
   else if(eqlstr(t,"li")==0){
@@ -1390,6 +1436,28 @@ signed char instruction(char t[256]){
   else if(eqlstr(t,"nop")==0){
     if(s[i_s]!='\0') return -1;
     if(re_instruction("addi", "zero, zero, 0")<0) return -1;
+  }
+  else if(eqlstr(t,"rxbu")==0){
+    char rd[256];
+    if(operand(&rd)!=1) return -1;
+    struct instruction type_X;
+    type_X.opcode = 0b0001011;
+    type_X.rd_index = index_register(rd);
+    int i = index_text(text_address);
+    if(i<0||type_X.rd_index<0) return -1;
+    store_text(i,type_X);
+    text_address = text_address+4;
+  }
+  else if(eqlstr(t,"txbu")==0){
+    char rs1[256];
+    if(operand(&rs1)!=1) return -1;
+    struct instruction type_X;
+    type_X.opcode = 0b0011011;
+    type_X.rs1_index = index_register(rs1);
+    int i = index_text(text_address);
+    if(i<0||type_X.rs1_index<0) return -1;
+    store_text(i,type_X);
+    text_address = text_address+4;
   }
   else if(eqlstr(t,"halt")==0){
     if(s[i_s]!='\0') return -1;
