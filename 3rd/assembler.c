@@ -122,8 +122,7 @@ signed char binary(struct instruction instruction){
     print_uo(0, 8);
     print_uo(instruction.opcode, 7);
   }
-  /* ここから浮動小数点数まわり。*/
-  // LOAD Fmt:I
+  // LOAD-FP Fmt:I
   if(instruction.opcode==0b0000111){
     print_uo(instruction.imm, 12);
     print_uo(instruction.rs1_index, 5);
@@ -131,7 +130,7 @@ signed char binary(struct instruction instruction){
     print_uo(instruction.rd_index, 5);
     print_uo(instruction.opcode, 7);
   }
-  // STORE Fmt:S
+  // STORE-FP Fmt:S
   else if(instruction.opcode==0b0100111){
     print_uo(instruction.imm>>5, 7);
     print_uo(instruction.rs2_index, 5);
@@ -140,7 +139,7 @@ signed char binary(struct instruction instruction){
     print_uo(instruction.imm, 5);
     print_uo(instruction.opcode, 7);
   }
-  // OTHERS
+  // OP-FP
   else if(instruction.opcode==0b1010011){
     print_uo(instruction.funct7, 7);
     print_uo(instruction.rs2_index, 5);

@@ -107,6 +107,14 @@ signed char f_execute(struct instruction instruction){
       }
       else return -1;
     }
+    // fmv.x.s
+    else if(instruction.funct7==0b1110000){
+      if(instruction.funct3==0b000&&instruction.rs2_index==0b00000){
+        float rs1 = f_load_regster(instruction.rs1_index);
+        store_register(instruction.rd_index, *((int32_t *)&rs1));
+      }
+      else return -1;
+    }
     else if(instruction.funct7==0b1010000){
       int32_t value = 0;
       float rs1 = f_load_regster(instruction.rs1_index);

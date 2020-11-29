@@ -363,6 +363,21 @@ signed char f_instruction(char t[256]){
     store_text(i,type_R);
     text_address = text_address+4;
   }
+  else if(eqlstr(t,"fmv.x.s")==0){
+    char rd[256],rs1[256];
+    if(operand(&rd)!=0||operand(&rs1)!=1) return -1;
+    struct instruction type_R;
+    type_R.opcode = 0b1010011;
+    type_R.funct3 = 0b000;
+    type_R.funct7 = 0b1110000;
+    type_R.rd_index = index_register(rd);
+    type_R.rs1_index = f_index_register(rs1);
+    type_R.rs2_index = 0b00000;
+    int i = index_text(text_address);
+    if(i<0||type_R.rd_index<0||type_R.rs1_index<0) return -1;
+    store_text(i,type_R);
+    text_address = text_address+4;
+  }
   else if(eqlstr(t,"feq.s")==0){
     char rd[256],rs1[256],rs2[256];
     if(operand(&rd)!=0||operand(&rs1)!=0||operand(&rs2)!=1) return -1;

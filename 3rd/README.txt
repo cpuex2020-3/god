@@ -48,6 +48,10 @@ sを指定：inputをステップ実行します。
 	jal label_textの、raではなくzero版。
 ・jalr rs1
 	jalr ra, rs1, 0
+・mod10 rd, rs1
+	div10 t1, rs1
+	mul10 t1, t1
+	sub   rd, rs1, t1
 ・li rd, imm[31:0]
 	immがsigned12bitで収まるなら
 	addi rd, zero, imm。
@@ -74,7 +78,7 @@ sを指定：inputをステップ実行します。
 各ファイルの説明
 
 main.c：はい。メモリの大きさはここで決まってます。エラー表示が雑でごめんなさい。
-external.s：外部関数の中身。もらったアセンブリファイルの先頭にこれを付け足して処理します。
+external.s：ライブラリ関数の中身。もらったアセンブリファイルの先頭にこれを付け足して処理します。
 instruction：命令を表す構造体instructionを定義しています。
 data：レジスタとメモリを抽象化しています。pcを除く各レジスタやメモリの初期値はここで決まってます。
 label：.textのラベルに関して、定義される行より前の行で使えるようにするやつ。

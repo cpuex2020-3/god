@@ -180,8 +180,7 @@ signed char assembly(struct instruction instruction, FILE *fp){
     fprintf(fp, "txbu ");
     fprintf(fp, " x%d\n", instruction.rs1_index);
   }
-  /* ここから浮動小数点数まわり。*/
-  // LOAD Fmt:I
+  // LOAD-FP Fmt:I
   else if(instruction.opcode==0b0000111){
     if(instruction.funct3==0b010){
       fprintf(fp, "flw  ");
@@ -189,7 +188,7 @@ signed char assembly(struct instruction instruction, FILE *fp){
     }
     else return -10;
   }
-  // STORE Fmt:S
+  // STORE-FP Fmt:S
   else if(instruction.opcode==0b0100111){
     if(instruction.funct3==0b010){
       fprintf(fp, "fsw  ");
@@ -197,7 +196,7 @@ signed char assembly(struct instruction instruction, FILE *fp){
     }
     else return -10;
   }
-  // OP Fmt:R
+  // OP-FP Fmt:R
   else if(instruction.opcode==0b1010011){
     if(instruction.funct7==0b0000000){
       fprintf(fp, "fadd.s");
@@ -234,7 +233,11 @@ signed char assembly(struct instruction instruction, FILE *fp){
     }
     else if(instruction.funct7==0b1101000){
       fprintf(fp, "fcvt.s.w");
-      fprintf(fp, " f%d, x%d\n", instruction.rd_index, instruction.rs1_index);
+      fprintf(fp, " x%d, f%d\n", instruction.rd_index, instruction.rs1_index);
+    }
+    else if(instruction.funct7==0b1110000){
+      fprintf(fp, "fmv.x.s");
+      fprintf(fp, " x%d, f%d\n", instruction.rd_index, instruction.rs1_index);
     }
     else if(instruction.funct7==0b1010000){
       if(instruction.funct3==0b010){
