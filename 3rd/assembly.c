@@ -236,7 +236,7 @@ signed char assembly(struct instruction instruction, FILE *fp){
       fprintf(fp, " x%d, f%d\n", instruction.rd_index, instruction.rs1_index);
     }
     else if(instruction.funct7==0b1110000){
-      fprintf(fp, "fmv.x.s");
+      fprintf(fp, "fmv.w.s");
       fprintf(fp, " x%d, f%d\n", instruction.rd_index, instruction.rs1_index);
     }
     else if(instruction.funct7==0b1010000){

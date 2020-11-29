@@ -363,7 +363,7 @@ signed char f_instruction(char t[256]){
     store_text(i,type_R);
     text_address = text_address+4;
   }
-  else if(eqlstr(t,"fmv.x.s")==0){
+  else if(eqlstr(t,"fmv.w.s")==0){
     char rd[256],rs1[256];
     if(operand(&rd)!=0||operand(&rs1)!=1) return -1;
     struct instruction type_R;
