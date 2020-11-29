@@ -844,7 +844,7 @@ signed char instruction(char t[256]){
       // 飛べない場合は auipc t1, uo -> beq rs1, rs2, uouo。
       else{
         distance = distance-4;
-        int32_t dis_lui = distance>>12;
+        int32_t dis_lui = (distance>>12)+((distance>>11)&1);
         struct instruction type_U;
         type_U.opcode = 0b0010111;
         type_U.rd_index = index_register("t1");
@@ -902,7 +902,7 @@ signed char instruction(char t[256]){
       // 飛べない場合は auipc t1, uo -> bne rs1, rs2, uouo。
       else{
         distance = distance-4;
-        int32_t dis_lui = distance>>12;
+        int32_t dis_lui = (distance>>12)+((distance>>11)&1);
         struct instruction type_U;
         type_U.opcode = 0b0010111;
         type_U.rd_index = index_register("t1");
@@ -960,7 +960,7 @@ signed char instruction(char t[256]){
       // 飛べない場合は auipc t1, uo -> blt rs1, rs2, uouo。
       else{
         distance = distance-4;
-        int32_t dis_lui = distance>>12;
+        int32_t dis_lui = (distance>>12)+((distance>>11)&1);
         struct instruction type_U;
         type_U.opcode = 0b0010111;
         type_U.rd_index = index_register("t1");
@@ -1018,7 +1018,7 @@ signed char instruction(char t[256]){
       // 飛べない場合は auipc t1, uo -> bge rs1, rs2, uouo。
       else{
         distance = distance-4;
-        int32_t dis_lui = distance>>12;
+        int32_t dis_lui = (distance>>12)+((distance>>11)&1);
         struct instruction type_U;
         type_U.opcode = 0b0010111;
         type_U.rd_index = index_register("t1");
@@ -1076,7 +1076,7 @@ signed char instruction(char t[256]){
       // 飛べない場合は auipc t1, uo -> bltu rs1, rs2, uouo。
       else{
         distance = distance-4;
-        int32_t dis_lui = distance>>12;
+        int32_t dis_lui = (distance>>12)+((distance>>11)&1);
         struct instruction type_U;
         type_U.opcode = 0b0010111;
         type_U.rd_index = index_register("t1");
@@ -1134,7 +1134,7 @@ signed char instruction(char t[256]){
       // 飛べない場合は auipc t1, uo -> bgeu rs1, rs2, uouo。
       else{
         distance = distance-4;
-        int32_t dis_lui = distance>>12;
+        int32_t dis_lui = (distance>>12)+((distance>>11)&1);
         struct instruction type_U;
         type_U.opcode = 0b0010111;
         type_U.rd_index = index_register("t1");
@@ -1190,7 +1190,7 @@ signed char instruction(char t[256]){
       // 飛べない場合は auipc t1, uo -> jal ra, t1, uouo。本来は jal ではなく call を使う。
       else{
         distance = distance-4;
-        int32_t dis_lui = distance>>12;
+        int32_t dis_lui = (distance>>12)+((distance>>11)&1);
         struct instruction type_U;
         type_U.opcode = 0b0010111;
         type_U.rd_index = index_register("t1");
@@ -1323,12 +1323,12 @@ signed char instruction(char t[256]){
       store_text(i,type_I);
       text_address = text_address+4;
     }
-    // 収まらないならlui rd, (imm_li>>12) -> addi rd, rd, imm_li-((imm_li>>12)<<12)。
+    // 収まらないならlui rd, uouo -> addi rd, rd, imm_li-(uouo<<12)。
     else{
       struct instruction type_U;
       type_U.opcode = 0b0110111;
       type_U.rd_index = index_register(rd);
-      type_U.imm = imm_li>>12;
+      type_U.imm = (imm_li>>12)+((imm_li>>11)&1);
       int i = index_text(text_address);
       if(i<0||type_U.rd_index<0) return -1;
       store_text(i,type_U);
@@ -1338,7 +1338,7 @@ signed char instruction(char t[256]){
       type_I.funct3 = 0b000;
       type_I.rd_index = index_register(rd);
       type_I.rs1_index = index_register(rd);
-      type_I.imm = imm_li-((imm_li>>12)<<12);
+      type_I.imm = imm_li-(type_U.imm<<12);
       i = index_text(text_address);
       if(i<0||type_I.rd_index<0) return -1;
       store_text(i,type_I);
@@ -1363,12 +1363,12 @@ signed char instruction(char t[256]){
       store_text(i,type_I);
       text_address = text_address+4;
     }
-    // 収まらないならlui rd, (imm_li>>12) -> addi rd, rd, imm_li-((imm_li>>12)<<12)。
+    // 収まらないならlui rd, uouo -> addi rd, rd, imm_li-(uouo<<12)。
     else{
       struct instruction type_U;
       type_U.opcode = 0b0110111;
       type_U.rd_index = index_register(rd);
-      type_U.imm = imm_li>>12;
+      type_U.imm = (imm_li>>12)+((imm_li>>11)&1);
       int i = index_text(text_address);
       if(i<0||type_U.rd_index<0) return -1;
       store_text(i,type_U);
@@ -1378,7 +1378,7 @@ signed char instruction(char t[256]){
       type_I.funct3 = 0b000;
       type_I.rd_index = index_register(rd);
       type_I.rs1_index = index_register(rd);
-      type_I.imm = imm_li-((imm_li>>12)<<12);
+      type_I.imm = imm_li-(type_U.imm<<12);
       i = index_text(text_address);
       if(i<0||type_I.rd_index<0) return -1;
       store_text(i,type_I);
@@ -1421,7 +1421,7 @@ signed char instruction(char t[256]){
       // 飛べない場合は auipc t1, uo -> jal zero, t1, uouo。本来は jal ではなく call を使う。
       else{
         distance = distance-4;
-        int32_t dis_lui = distance>>12;
+        int32_t dis_lui = (distance>>12)+((distance>>11)&1);
         struct instruction type_U;
         type_U.opcode = 0b0010111;
         type_U.rd_index = index_register("t1");

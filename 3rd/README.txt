@@ -39,9 +39,9 @@ sを指定：inputをステップ実行します。
 	labelが指す位置と現在読んでる命令が格納される予定の位置の差distanceを取得。
 	distanceがsigned21bitで収まるなら
 	jal ra, distance。
-	収まらないならdistanceをdistance-4に更新して、
-	auipc t1, (distance>>12)
-	jalr ra, t1, (distance-((distance>>12)<<12))
+	収まらないならdistance-4に最も近い2^12の倍数をtwelveとして、
+	auipc t1, (twelve>>12)
+	jalr ra, t1, (distance-((twelve>>12)<<12))
 	に展開している。
 	本来なら収まらない場合はjal label_textではなくcall label_textの仕事らしい。
 ・j label_text
@@ -55,9 +55,9 @@ sを指定：inputをステップ実行します。
 ・li rd, imm[31:0]
 	immがsigned12bitで収まるなら
 	addi rd, zero, imm。
-	収まらないなら
-	lui rd, imm>>12
-	addi rd, rd, imm-((imm>>12)<<12)
+	収まらないならimmに最も近い2^12の倍数をtwelveとして、
+	lui rd, (twelve>>12)
+	addi rd, rd, (imm-((twelve>>12)<<12))
 	に展開している。
 ・la rd, label_data
 	labelが指すアドレスaddを取得して、li rd, immと同じ処理。
