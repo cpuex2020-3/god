@@ -42,7 +42,7 @@ signed char f_execute(struct instruction instruction){
       }
     }
     // fsub.s
-    else if(instruction.funct7==0b0100000){
+    else if(instruction.funct7==0b0000100){
       if(instruction.funct3==rm){
         float rs1 = f_load_regster(instruction.rs1_index);
         float rs2 = f_load_regster(instruction.rs2_index);
@@ -395,7 +395,6 @@ signed char step(){
 
 signed char matomete(){
   for(int i = index_text(pc); ; uart = 0, i = index_text(pc)){
-    // printf("%d\n", i);
     uart = 0;
     if(i<0) return -1;
     struct instruction instruction = load_text(i);
