@@ -3,6 +3,12 @@
 
 .text
 
+.globl min_caml_print_newline
+min_caml_print_newline:
+	li	t1, 10
+	txbu	t1
+	ret
+
 .globl min_caml_print_int
 min_caml_print_int:
   li   t1, 48
@@ -25,12 +31,6 @@ min_caml_print_int:
   li   t1, 10
   txbu t1
   ret
-
-	.globl min_caml_print_newline
-min_caml_print_newline:
-	li	t1, 10
-	txbu	t1
-	ret
 
 
 # tri.s : Implement sin, cos.

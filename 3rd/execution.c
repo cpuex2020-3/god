@@ -386,8 +386,8 @@ signed char step(){
   if(i<0) return -1;
   struct instruction instruction = load_text(i);
 
-  //printf("\nnext execution : ");
-  //if(assembly(instruction, stdout)<0) return -1;
+  printf("\nnext execution : ");
+  if(assembly(instruction, stdout)<0) return -1;
   if(execute(instruction)<0) return -1;
 
   return 0;
@@ -395,6 +395,7 @@ signed char step(){
 
 signed char matomete(){
   for(int i = index_text(pc); ; uart = 0, i = index_text(pc)){
+    // printf("%d\n", i);
     uart = 0;
     if(i<0) return -1;
     struct instruction instruction = load_text(i);

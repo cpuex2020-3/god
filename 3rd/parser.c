@@ -1522,8 +1522,6 @@ signed char parse(char *file_name){
     t[i_t] = '\0';
     white_skip();
 
-    /* parse errorが出たときはこれを使ってどこでerror吐いてるか確認すると幸せになれるかも。*/
-    // printf("%s\n", t);
     /* 切り出した先頭を見て、label:, .uouo, instruction に場合分け */
     if(t[0]=='\0'){
     }
