@@ -308,10 +308,15 @@ add	t6, t6, t0
 fsw	fa0, 0(t6)
 j	create_float_array_loop
 
-.globl min_caml_sqrt
+	.globl min_caml_fsqr
+min_caml_fsqr:
+	fsqrt.s	fa0, fa0
+	ret
+	.globl min_caml_sqrt
 min_caml_sqrt:
-fsqrt.s	fa0, fa0
-ret
+	fcvt.s.w	fa0, a0
+	fsqrt.s	fa0, fa0
+	ret
 .globl min_caml_abs_float
 min_caml_abs_float:
 fsgnjx.s	fa0, fa0, fa0
@@ -402,3 +407,26 @@ flw	ft2, 0(t6)
 fsub.s	fa0, fa0, ft2
 floor_ret:
 ret
+
+	.globl min_caml_fiszero
+min_caml_fiszero:
+	la	t2, l.zero
+	flw	ft0, 0(t2)
+	feq.s	a0, fa0, ft0
+	ret
+
+	.globl min_caml_fispos
+min_caml_fispos:
+	la	t2, l.zero
+	flw	ft0, 0(t2)
+	flt.s	a0, ft0, fa0
+	ret
+
+	.globl min_caml_fneg
+min_caml_fneg:
+	fsgnjn.s	fa0, fa0, fa0
+	ret
+
+	.globl min_caml_read_float
+min_caml_read_float:
+	ret
