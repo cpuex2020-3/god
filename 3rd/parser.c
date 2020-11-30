@@ -1283,7 +1283,7 @@ signed char instruction(char t[256]){
     text_address = text_address+4;
     struct instruction type_X_m;
     type_X_m.opcode = 0b1011011;
-    type_X_m.funct3 = 0b001;
+    type_X_m.funct3 = 0b000;
     type_X_m.funct7 = 0b0000000;
     type_X_m.rd_index = index_register("t1");
     type_X_m.rs1_index = index_register("t1");

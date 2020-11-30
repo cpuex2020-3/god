@@ -5,19 +5,19 @@
 
 .globl min_caml_print_newline
 min_caml_print_newline:
-	li	t1, 10
+	addi	t1, zero, 10
 	txbu	t1
 	ret
 
-.globl min_caml_print_int
-min_caml_print_int:
-  li   t1, 48
+.globl min_caml_print_int_hex
+min_caml_print_int_hex:
+  addi t1, zero, 48
   txbu t1
-  li   t1, 120
+  addi t1, zero, 120
   txbu t1
   mv   t1, a0
-  li   t2, 28
-  li   t3, 10
+  addi t2, zero, 28
+  addi t3, zero, 10
   srl  a0, a0, t2
   andi a0, a0, 15
   blt  a0, t3, 8
@@ -28,9 +28,74 @@ min_caml_print_int:
   addi t2, t2, -4
   mv   a0, t1
   jal  zero, -36
-  li   t1, 10
+  addi t1, zero, 10
   txbu t1
   ret
+
+.globl min_caml_print_int
+min_caml_print_int:
+	#negative
+	bge  a0, zero, 48
+	addi t1, zero, 45
+	txbu t1
+	lui t1, -512695
+	addi t1, t1, -1279
+	bge  a0, t1, 24
+	lui t1, -488281
+	addi t1, t1, -1024
+	sub  a0, a0, t1
+	addi t1, zero, 50
+	txbu t1
+	sub  a0, zero, a0
+	#positive
+	mod10 s2, a0
+	div10 a0, a0
+	beq   a0, zero, 236
+	mod10 s3, a0
+	div10 a0, a0
+	beq   a0, zero, 208
+	mod10 s4, a0
+	div10 a0, a0
+	beq   a0, zero, 180
+	mod10 s5, a0
+	div10 a0, a0
+	beq   a0, zero, 152
+	mod10 s6, a0
+	div10 a0, a0
+	beq   a0, zero, 124
+	mod10 s7, a0
+	div10 a0, a0
+	beq   a0, zero, 96
+	mod10 s8, a0
+	div10 a0, a0
+	beq   a0, zero, 68
+	mod10 s9, a0
+	div10 a0, a0
+	beq   a0, zero, 40
+	mod10 s10, a0
+	div10 a0, a0
+	beq   a0, zero, 12
+	addi  s11, a0, 48
+	txbu  s11
+	addi  s10, s10, 48
+	txbu  s10
+	addi  s9, s9, 48
+	txbu  s9
+	addi  s8, s8, 48
+	txbu  s8
+	addi  s7, s7, 48
+	txbu  s7
+	addi  s6, s6, 48
+	txbu  s6
+	addi  s5, s5, 48
+	txbu  s5
+	addi  s4, s4, 48
+	txbu  s4
+	addi  s3, s3, 48
+	txbu  s3
+	addi  s2, s2, 48
+	txbu  s2
+	ret
 
 
 # tri.s : Implement sin, cos.
