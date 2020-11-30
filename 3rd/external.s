@@ -26,6 +26,12 @@ min_caml_print_int:
   txbu t1
   ret
 
+	.globl min_caml_print_newline
+min_caml_print_newline:
+	li	t1, 10
+	txbu	t1
+	ret
+
 
 # tri.s : Implement sin, cos.
 
@@ -210,6 +216,7 @@ slli	t4, t5, 2
 create_array_loop:
 bne	t5, zero, create_array_cont
 create_array_exit:
+mv	a0, t0
 add	t0, t0, t4
 ret
 create_array_cont:
@@ -226,6 +233,7 @@ slli	t4, t5, 2
 create_float_array_loop:
 bne	t5, zero, create_float_array_cont
 create_float_array_exit:
+mv	a0, t0
 add	t0, t0, t4
 ret
 create_float_array_cont:
