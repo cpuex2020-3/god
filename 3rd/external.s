@@ -269,8 +269,8 @@ j	kernel_sin
 # lib.s : Fix min_caml_create_array
 
 .data
-l.one:	# 1.000000
-.word	0x3f800000
+l.zero:	# 0.0
+.word	0x00000000
 l.ftoi_cmp: # 8388608.0
 .word	0x4b000000
 .text
@@ -320,45 +320,64 @@ ret
 min_caml_float_of_int:
 fcvt.s.w	fa0, a0
 ret
-.globl min_caml_truncate
+	.globl min_caml_truncate
 min_caml_truncate:
-sw	ra,	4(s0)
-addi	s0, s0, 8
-jal	min_caml_floor
-addi	s0, s0, -8
-lw	ra,	4(s0)
-j	min_caml_int_of_float
-.globl min_caml_int_of_float
+	la	t2, l.zero
+	flw	ft0, 0(t2)
+	flt.s	t2, fa0, ft0
+	fsgnjx.s	fa0, fa0, fa0
+	sw	ra,	4(s0)
+	sw	t2, 8(s0)
+	addi	s0, s0, 12
+	jal	min_caml_floor
+	jal	min_caml_int_of_float
+	addi	s0, s0, -12
+	lw	t2, 8(s0)
+	lw	ra,	4(s0)
+	beq	t2, zero, truncate_end
+	sub	a0, zero, a0
+truncate_end:
+	ret
+	.globl min_caml_int_of_float
 min_caml_int_of_float:
-la	t6, l.ftoi_cmp
-flw	ft0, 0(t6)
-li	t4, 1258291200
-flt.s	t3, fa0, ft0
-beq	t3, zero, ftoi_else
-fadd.s	fa0, fa0, ft0
-fmv.w.s	a0, fa0
-sub	a0, a0, t4
-ret
+	la	t2, l.zero
+	flw	ft0, 0(t2)
+	flt.s	t2, fa0, ft0
+	fsgnjx.s	fa0, fa0, fa0
+	la	t6, l.ftoi_cmp
+	flw	ft0, 0(t6)
+	li	t4, 1258291200
+	flt.s	t3, fa0, ft0
+	beq	t3, zero, ftoi_else
+	fadd.s	fa0, fa0, ft0
+	fmv.w.s	a0, fa0
+	sub	a0, a0, t4
+	beq	t2, zero, ftoi_end
+	sub	a0, zero, a0
+ftoi_end:
+	ret
 ftoi_else:
-li	t5, 0
+	li	t5, 0
 ftoi_cont:
-flt.s	t3, fa0, ft0
-bne	t3, zero, ftoi_sum
-fsub.s	fa0, fa0, ft0
-addi	t5, t5, 1
-j	ftoi_cont
+	flt.s	t3, fa0, ft0
+	bne	t3, zero, ftoi_sum
+	fsub.s	fa0, fa0, ft0
+	addi	t5, t5, 1
+	j	ftoi_cont
 ftoi_sum:
-fadd.s	fa0, fa0, ft0
-fmv.w.s	a0, fa0
-sub	a0, a0, t4
-li	t4, 8388608
+	fadd.s	fa0, fa0, ft0
+	fmv.w.s	a0, fa0
+	sub	a0, a0, t4
+	li	t4, 8388608
 ftoi_loop:
-bne	t5, zero, ftoi_sum_cont
-ret
+	bne	t5, zero, ftoi_sum_cont
+	beq	t2, zero, ftoi_end
+	sub	a0, zero, a0
+	ret
 ftoi_sum_cont:
-addi	t5, t5, -1
-add	a0, a0, t4
-j	ftoi_loop
+	addi	t5, t5, -1
+	add	a0, a0, t4
+	j	ftoi_loop
 
 .globl min_caml_floor
 min_caml_floor:
