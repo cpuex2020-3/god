@@ -9,7 +9,7 @@
 
 /* execute のなかから使う。長くなるから分離しただけ。*/
 signed char f_execute(struct instruction instruction){
-  // LOAD
+  // LOAD-FP
   if(instruction.opcode==0b0000111){
     int32_t mem_address = load_regster(instruction.rs1_index)+instruction.imm;
     int mem_index = index_memory(mem_address);
@@ -20,7 +20,7 @@ signed char f_execute(struct instruction instruction){
     }
     else return -1;
   }
-  // STORE
+  // STORE-FP
   else if(instruction.opcode==0b0100111){
     int32_t mem_address = load_regster(instruction.rs1_index)+instruction.imm;
     int mem_index = index_memory(mem_address);
@@ -31,7 +31,7 @@ signed char f_execute(struct instruction instruction){
     }
     else return -1;
   }
-  // OTHERS
+  // OP-FP
   else if(instruction.opcode==0b1010011){
     // fadd.s
     if(instruction.funct7==0b0000000){
@@ -107,7 +107,15 @@ signed char f_execute(struct instruction instruction){
       }
       else return -1;
     }
-    // fmv.x.s
+    // fmv.s.w
+    else if(instruction.funct7==0b1111000){
+      if(instruction.funct3==0b000&&instruction.rs2_index==0b00000){
+        int32_t rs1 = load_regster(instruction.rs1_index);
+        f_store_register(instruction.rd_index, *((float *)&rs1));
+      }
+      else return -1;
+    }
+    // fmv.w.s
     else if(instruction.funct7==0b1110000){
       if(instruction.funct3==0b000&&instruction.rs2_index==0b00000){
         float rs1 = f_load_regster(instruction.rs1_index);
@@ -356,7 +364,7 @@ signed char execute(struct instruction instruction){
   // rxbu
   else if(instruction.opcode==0b0001011){
     printf("plz UART for rxbu : ");
-    scanf("%d\n", &uart);
+    scanf("%d", &uart);
     if(uart<0||uart>=256) return -1;
     int32_t rd = load_regster(instruction.rd_index)&0xffffff00;
     if(instruction.rd_index!=0) store_register(instruction.rd_index, rd+uart);
@@ -395,6 +403,7 @@ signed char step(){
 
 signed char matomete(){
   for(int i = index_text(pc); ; uart = 0, i = index_text(pc)){
+    // printf("%d\n", i);
     uart = 0;
     if(i<0) return -1;
     struct instruction instruction = load_text(i);

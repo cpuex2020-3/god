@@ -363,6 +363,21 @@ signed char f_instruction(char t[256]){
     store_text(i,type_R);
     text_address = text_address+4;
   }
+  else if(eqlstr(t,"fmv.s.w")==0){
+    char rd[256],rs1[256];
+    if(operand(&rd)!=0||operand(&rs1)!=1) return -1;
+    struct instruction type_R;
+    type_R.opcode = 0b1010011;
+    type_R.funct3 = 0b000;
+    type_R.funct7 = 0b1111000;
+    type_R.rd_index = f_index_register(rd);
+    type_R.rs1_index = index_register(rs1);
+    type_R.rs2_index = 0b00000;
+    int i = index_text(text_address);
+    if(i<0||type_R.rd_index<0||type_R.rs1_index<0) return -1;
+    store_text(i,type_R);
+    text_address = text_address+4;
+  }
   else if(eqlstr(t,"fmv.w.s")==0){
     char rd[256],rs1[256];
     if(operand(&rd)!=0||operand(&rs1)!=1) return -1;
@@ -1473,6 +1488,27 @@ signed char instruction(char t[256]){
     if(i<0||type_X.rs1_index<0) return -1;
     store_text(i,type_X);
     text_address = text_address+4;
+  }
+  else if(eqlstr(t,"read_int")==0){
+    if(s[i_s]!='\0') return -1;
+    if(re_instruction("rxbu", "a0")<0) return -1;
+    if(re_instruction("slli", "a0, a0, 8")<0) return -1;
+    if(re_instruction("rxbu", "a0")<0) return -1;
+    if(re_instruction("slli", "a0, a0, 8")<0) return -1;
+    if(re_instruction("rxbu", "a0")<0) return -1;
+    if(re_instruction("slli", "a0, a0, 8")<0) return -1;
+    if(re_instruction("rxbu", "a0")<0) return -1;
+  }
+  else if(eqlstr(t,"read_float")==0){
+    if(s[i_s]!='\0') return -1;
+    if(re_instruction("rxbu", "t1")<0) return -1;
+    if(re_instruction("slli", "t1, t1, 8")<0) return -1;
+    if(re_instruction("rxbu", "t1")<0) return -1;
+    if(re_instruction("slli", "t1, t1, 8")<0) return -1;
+    if(re_instruction("rxbu", "t1")<0) return -1;
+    if(re_instruction("slli", "t1, t1, 8")<0) return -1;
+    if(re_instruction("rxbu", "t1")<0) return -1;
+    if(re_instruction("fmv.s.w", "fa0, t1")<0) return -1;
   }
   else if(eqlstr(t,"halt")==0){
     if(s[i_s]!='\0') return -1;

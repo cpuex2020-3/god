@@ -73,6 +73,23 @@ sを指定：inputをステップ実行します。
 	fsgnjx.s rd, rs1, rs1
 ・fneg rd, rs1
 	fsgnjn.s rd, rs1, rs1
+・read_int
+	rxbu a0
+	sll  8
+	rxbu a0
+	sll  8
+	rxbu a0
+	sll  8
+	rxbu a0
+・read_float
+	rxbu t1
+	sll  8
+	rxbu t1
+	sll  8
+	rxbu t1
+	sll  8
+	rxbu t1
+	fmv.s.w fa0, t1
 
 
 各ファイルの説明

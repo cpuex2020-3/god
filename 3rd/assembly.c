@@ -235,6 +235,10 @@ signed char assembly(struct instruction instruction, FILE *fp){
       fprintf(fp, "fcvt.s.w");
       fprintf(fp, " x%d, f%d\n", instruction.rd_index, instruction.rs1_index);
     }
+    else if(instruction.funct7==0b1111000){
+      fprintf(fp, "fmv.s.w");
+      fprintf(fp, " f%d, x%d\n", instruction.rd_index, instruction.rs1_index);
+    }
     else if(instruction.funct7==0b1110000){
       fprintf(fp, "fmv.w.s");
       fprintf(fp, " x%d, f%d\n", instruction.rd_index, instruction.rs1_index);
