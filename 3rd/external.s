@@ -429,4 +429,15 @@ min_caml_fneg:
 
 	.globl min_caml_read_float
 min_caml_read_float:
+	read_float
+	ret
+
+	.globl min_caml_read_int
+min_caml_read_int:
+	read_int
+	ret
+
+	.globl min_caml_print_char
+min_caml_print_char:
+	txbu	a0
 	ret
