@@ -100,7 +100,7 @@ instruction：命令を表す構造体instructionを定義しています。
 data：レジスタとメモリを抽象化しています。pcを除く各レジスタやメモリの初期値はここで決まってます。
 label：.textのラベルに関して、定義される行より前の行で使えるようにするやつ。
 parser：入力されたアセンブリをラベルやら擬似命令やら解決して、instructionとしてtext領域に格納するえらいやつ。
+fpu：fpuの演算を定義しています。コア係&FPU係にもらったCを雑にくっつけてえいえいしただけ。
 execution：text領域からpcが指す命令を持ってきて実行します。
 assembler：instructionは機械語と1対1対応するので、出力するだけの簡単なお仕事。
 assembly：メモリ内のinstructonを簡単なアセンブリに戻します。
-fdata：dataの浮動小数点数バージョン。
