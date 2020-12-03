@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include "instruction.h"
 #include "data.h"
-#include "fdata.h"
 #include "labels.h"
 
 int32_t text_address = 0;
@@ -1530,122 +1529,66 @@ signed char parse(char *file_name){
 
   init_parser(file_name);
 
+  char *name[2] = {"external.s", file_name};
   FILE *fp;
-  fp = fopen("external.s", "r");
-  if(fp==NULL) return -1;
+  for (size_t uo = 0; uo<2; uo++) {
+    fp = fopen(name[uo], "r");
+    if(fp==NULL) return -1;
 
-  while(fgets(s,256,fp)!=NULL){
-    /*　コメントアウト部分、ついでに末尾の改行も消しとこ */
-    while(s[i_s]!='\0'){
-      if(s[i_s]=='\n'||s[i_s]=='#'){
-        i_s--;
-        while(0<=i_s&&(s[i_s]==9||s[i_s]==32)) i_s--;
-        s[i_s+1]='\0';
-        break;
+    while(fgets(s,256,fp)!=NULL){
+      /*　コメントアウト部分、ついでに末尾の改行も消しとこ */
+      while(s[i_s]!='\0'){
+        if(s[i_s]=='\n'||s[i_s]=='#'){
+          i_s--;
+          while(0<=i_s&&(s[i_s]==9||s[i_s]==32)) i_s--;
+          s[i_s+1]='\0';
+          break;
+        }
+        i_s++;
       }
-      i_s++;
-    }
-    i_s = 0;
+      i_s = 0;
 
-    /* 先頭の切り出し */
-    char t[256];
-    int i_t = 0;
-    white_skip();
-    while(s[i_s]!=9&&s[i_s]!=32&&s[i_s]!='\n'&&s[i_s]!='\0'){
-      t[i_t] = s[i_s];
-      i_s++; i_t++;
-    }
-    t[i_t] = '\0';
-    white_skip();
+      /* 先頭の切り出し */
+      char t[256];
+      int i_t = 0;
+      white_skip();
+      while(s[i_s]!=9&&s[i_s]!=32&&s[i_s]!='\n'&&s[i_s]!='\0'){
+        t[i_t] = s[i_s];
+        i_s++; i_t++;
+      }
+      t[i_t] = '\0';
+      white_skip();
 
-    /* 切り出した先頭を見て、label:, .uouo, instruction に場合分け */
-    if(t[0]=='\0'){
-    }
-    else if(t[i_t-1]==':'){
-      t[i_t-1] = '\0';
-      if(labeling(t)<0){
-        fclose(fp);
-        delete_list(labels);
-        return -1;
+      /* 切り出した先頭を見て、label:, .uouo, instruction に場合分け */
+      if(t[0]=='\0'){
       }
-    }
-    else if(t[0]=='.'){
-      if(directive(t)<0){
-        fclose(fp);
-        delete_list(labels);
-        return -1;
+      else if(t[i_t-1]==':'){
+        t[i_t-1] = '\0';
+        if(labeling(t)<0){
+          fclose(fp);
+          delete_list(labels);
+          return -1;
+        }
       }
-    }
-    else{
-      if(instruction(t)<0){
-        fclose(fp);
-        delete_list(labels);
-        return -1;
+      else if(t[0]=='.'){
+        if(directive(t)<0){
+          fclose(fp);
+          delete_list(labels);
+          return -1;
+        }
       }
-    }
+      else{
+        if(instruction(t)<0){
+          fclose(fp);
+          delete_list(labels);
+          return -1;
+        }
+      }
 
-    i_s = 0;
+      i_s = 0;
+    }
+    fclose(fp);
   }
-  fclose(fp);
-
-  fp = fopen(file_name, "r");
-  if(fp==NULL) return -1;
-
-  while(fgets(s,256,fp)!=NULL){
-    /*　コメントアウト部分、ついでに末尾の改行も消しとこ */
-    while(s[i_s]!='\0'){
-      if(s[i_s]=='\n'||s[i_s]=='#'){
-        i_s--;
-        while(0<=i_s&&(s[i_s]==9||s[i_s]==32)) i_s--;
-        s[i_s+1]='\0';
-        break;
-      }
-      i_s++;
-    }
-    i_s = 0;
-
-    /* 先頭の切り出し */
-    char t[256];
-    int i_t = 0;
-    white_skip();
-    while(s[i_s]!=9&&s[i_s]!=32&&s[i_s]!='\n'&&s[i_s]!='\0'){
-      t[i_t] = s[i_s];
-      i_s++; i_t++;
-    }
-    t[i_t] = '\0';
-    white_skip();
-
-    /* parse errorが出たときはこれを使ってどこでerror吐いてるか確認すると幸せになれるかも。*/
-    // printf("%s\n", t);
-    /* 切り出した先頭を見て、label:, .uouo, instruction に場合分け */
-    if(t[0]=='\0'){
-    }
-    else if(t[i_t-1]==':'){
-      t[i_t-1] = '\0';
-      if(labeling(t)<0){
-        fclose(fp);
-        delete_list(labels);
-        return -1;
-      }
-    }
-    else if(t[0]=='.'){
-      if(directive(t)<0){
-        fclose(fp);
-        delete_list(labels);
-        return -1;
-      }
-    }
-    else{
-      if(instruction(t)<0){
-        fclose(fp);
-        delete_list(labels);
-        return -1;
-      }
-    }
-
-    i_s = 0;
-  }
-  fclose(fp);
 
   /* 末尾にもhaltを足します。*/
   /* jalr zero, ra, 0にした方が行儀が良さそうだけど、こっちの方が便利なので。*/
