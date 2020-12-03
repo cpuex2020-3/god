@@ -100,31 +100,48 @@ min_caml_print_int:
 
 # tri.s : Implement sin, cos.
 
-.data
+	.data
 l.dpi:	# 6.28318548203
-.word 0x40c90fdb
+	.word 0x40c90fdb
 l.pi:	# 3.1415927410125732421875
-.word	0x40490fdb
+	.word	0x40490fdb
 l.qpi:	# 0.785398
-.word	0x3f490fd8
+	.word	0x3f490fd8
 l.hpi:	# 1.570796
-.word	0x3fc90fd8
+	.word	0x3fc90fd8
 l.n.720:	# 720.000000
-.word	0x44340000
+	.word	0x44340000
 l.twentyfour:	# 24.000000
-.word	0x41c00000
+	.word	0x41c00000
 l.four:	# 4.000000
-.word	0x40800000
+	.word	0x40800000
 l.two:	# 2.000000
-.word	0x40000000
+	.word	0x40000000
 l.one:	# 1.000000
-.word	0x3f800000
+	.word	0x3f800000
 l.n.5040:	# 5040.000000
-.word	0x459d8000
+	.word	0x459d8000
 l.n.120:	# 120.000000
-.word	0x42f00000
+	.word	0x42f00000
 l.six:	# 6.000000
-.word	0x40c00000
+	.word	0x40c00000
+l.atan_kernel.3:	# -0.3333333
+	.word	0xbeaaaaaa
+l.atan_kernel.5:	# 0.2
+	.word	0x3e4ccccd
+l.atan_kernel.7:	# -0.142857142
+	.word	0xbe124925
+l.atan_kernel.9:	# 0.111111104
+	.word	0x3de38e38
+l.atan_kernel.11:	# -0.08976446
+	.word	0xbdb7d66e
+l.atan_kernel.13:	#  0.060035485
+	.word	0x3d75e7c5
+l.atan_cmp.1:	# 0.4375
+	.word	0x3ee00000
+l.atan_cmp.2:	# 2.4375
+	.word	0x401c0000
+
 
 .text
 reduction:
@@ -268,45 +285,45 @@ j	kernel_sin
 
 # lib.s : Fix min_caml_create_array
 
-.data
+	.data
 l.zero:	# 0.0
-.word	0x00000000
+	.word	0x00000000
 l.ftoi_cmp: # 8388608.0
-.word	0x4b000000
-.text
-.globl min_caml_create_array
+	.word	0x4b000000
+	.text
+	.globl min_caml_create_array
 min_caml_create_array:
-mv	t5, a0
-slli	t4, t5, 2
+	mv	t5, a0
+	slli	t4, t5, 2
 create_array_loop:
-bne	t5, zero, create_array_cont
+	bne	t5, zero, create_array_cont
 create_array_exit:
-mv	a0, t0
-add	t0, t0, t4
-ret
+	mv	a0, t0
+	add	t0, t0, t4
+	ret
 create_array_cont:
-addi	t5, t5, -1
-slli	t6, t5, 2
-add	t6, t6, t0
-sw	a1, 0(t6)
-j	create_array_loop
+	addi	t5, t5, -1
+	slli	t6, t5, 2
+	add	t6, t6, t0
+	sw	a1, 0(t6)
+	j	create_array_loop
 
-.globl min_caml_create_float_array
+	.globl min_caml_create_float_array
 min_caml_create_float_array:
-mv	t5, a0
-slli	t4, t5, 2
+	mv	t5, a0
+	slli	t4, t5, 2
 create_float_array_loop:
-bne	t5, zero, create_float_array_cont
-create_float_array_exit:
-mv	a0, t0
-add	t0, t0, t4
-ret
+	bne	t5, zero, create_float_array_cont
+	create_float_array_exit:
+	mv	a0, t0
+	add	t0, t0, t4
+	ret
 create_float_array_cont:
-addi	t5, t5, -1
-slli	t6, t5, 2
-add	t6, t6, t0
-fsw	fa0, 0(t6)
-j	create_float_array_loop
+	addi	t5, t5, -1
+	slli	t6, t5, 2
+	add	t6, t6, t0
+	fsw	fa0, 0(t6)
+	j	create_float_array_loop
 
 	.globl min_caml_fsqr
 min_caml_fsqr:
@@ -317,14 +334,14 @@ min_caml_sqrt:
 	fcvt.s.w	fa0, a0
 	fsqrt.s	fa0, fa0
 	ret
-.globl min_caml_abs_float
+	.globl min_caml_abs_float
 min_caml_abs_float:
-fsgnjx.s	fa0, fa0, fa0
-ret
-.globl min_caml_float_of_int
+	fsgnjx.s	fa0, fa0, fa0
+	ret
+	.globl min_caml_float_of_int
 min_caml_float_of_int:
-fcvt.s.w	fa0, a0
-ret
+	fcvt.s.w	fa0, a0
+	ret
 	.globl min_caml_truncate
 min_caml_truncate:
 	la	t2, l.zero
@@ -343,19 +360,20 @@ min_caml_truncate:
 	sub	a0, zero, a0
 truncate_end:
 	ret
+
 	.globl min_caml_int_of_float
 min_caml_int_of_float:
 	la	t2, l.zero
 	flw	ft0, 0(t2)
 	flt.s	t2, fa0, ft0
-	fsgnjx.s	fa0, fa0, fa0
+	fsgnjx.s	ft1, fa0, fa0
 	la	t6, l.ftoi_cmp
 	flw	ft0, 0(t6)
 	li	t4, 1258291200
-	flt.s	t3, fa0, ft0
+	flt.s	t3, ft1, ft0
 	beq	t3, zero, ftoi_else
-	fadd.s	fa0, fa0, ft0
-	fmv.w.s	a0, fa0
+	fadd.s	ft1, ft1, ft0
+	fmv.w.s	a0, ft1
 	sub	a0, a0, t4
 	beq	t2, zero, ftoi_end
 	sub	a0, zero, a0
@@ -364,14 +382,14 @@ ftoi_end:
 ftoi_else:
 	li	t5, 0
 ftoi_cont:
-	flt.s	t3, fa0, ft0
+	flt.s	t3, ft1, ft0
 	bne	t3, zero, ftoi_sum
-	fsub.s	fa0, fa0, ft0
+	fsub.s	ft1, ft1, ft0
 	addi	t5, t5, 1
 	j	ftoi_cont
 ftoi_sum:
-	fadd.s	fa0, fa0, ft0
-	fmv.w.s	a0, fa0
+	fadd.s	ft1, ft1, ft0
+	fmv.w.s	a0, ft1
 	sub	a0, a0, t4
 	li	t4, 8388608
 ftoi_loop:
@@ -440,4 +458,81 @@ min_caml_read_int:
 	.globl min_caml_print_char
 min_caml_print_char:
 	txbu	a0
+	ret
+kernel_atan:
+	fsgnj.s	ft0, fa0, fa0
+	fmul.s	ft1, fa0, fa0
+	la	t2, l.atan_kernel.3
+	fmul.s	ft0, ft0, ft1
+	flw	ft2, 0(t2)
+	fmul.s	ft2, ft2, ft0
+	fadd.s	fa0, fa0, ft2
+	la	t2, l.atan_kernel.5
+	fmul.s	ft0, ft0, ft1
+	flw	ft2, 0(t2)
+	fmul.s	ft2, ft2, ft0
+	fadd.s	fa0, fa0, ft2
+	la	t2, l.atan_kernel.7
+	fmul.s	ft0, ft0, ft1
+	flw	ft2, 0(t2)
+	fmul.s	ft2, ft2, ft0
+	fadd.s	fa0, fa0, ft2
+	la	t2, l.atan_kernel.9
+	fmul.s	ft0, ft0, ft1
+	flw	ft2, 0(t2)
+	fmul.s	ft2, ft2, ft0
+	fadd.s	fa0, fa0, ft2
+	la	t2, l.atan_kernel.11
+	fmul.s	ft0, ft0, ft1
+	flw	ft2, 0(t2)
+	fmul.s	ft2, ft2, ft0
+	fadd.s	fa0, fa0, ft2
+	la	t2, l.atan_kernel.13
+	fmul.s	ft0, ft0, ft1
+	flw	ft2, 0(t2)
+	fmul.s	ft2, ft2, ft0
+	fadd.s	fa0, fa0, ft2
+	ret
+	.globl min_caml_aton
+min_caml_atan:
+	fsgnj.s	ft4, fa0, fa0
+	fsgnjx.s	ft3, fa0, fa0
+	la	t2, l.atan_cmp.1
+	flw	ft1, 0(t2)
+	flt.s	t2, ft3, ft1
+	beq	t2, zero, atan_else.1
+	j	kernel_atan
+atan_else.1:
+	la	t2, l.atan_cmp.2
+	flw	ft1, 0(t2)
+	flt.s	t2, ft3, ft1
+	beq	t2, zero, atan_else.2
+	la	t3, l.one
+	flw	ft2, 0(t3)
+	fsub.s	fa0, ft3, ft2
+	fadd.s	ft2, ft3, ft2
+	fdiv.s	fa0, fa0, ft2
+	sw	ra, 4(s0)
+	addi	s0, s0, 8
+	jal	kernel_atan
+	addi	s0, s0, -8
+	lw	ra, 4(s0)
+	la	t2, l.qpi
+	flw	ft1, 0(t2)
+	fadd.s	fa0, fa0, ft1
+	fsgnj.s	fa0, fa0, ft4
+	ret
+atan_else.2:
+	la	t3, l.one
+	flw	ft2, 0(t3)
+	fdiv.s	fa0, ft2, ft3
+	sw	ra, 4(s0)
+	addi	s0, s0, 8
+	jal	kernel_atan
+	addi	s0, s0, -8
+	lw	ra, 4(s0)
+	la	t2, l.hpi
+	flw	ft1, 0(t2)
+	fsub.s	fa0, ft1, fa0
+	fsgnj.s	fa0, fa0, ft4
 	ret
