@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include "instruction.h"
 #include "data.h"
-#include "fdata.h"
 #include "labels.h"
 
 int32_t text_address = 0;

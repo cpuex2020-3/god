@@ -4,7 +4,7 @@
 #include <math.h>
 #include "instruction.h"
 #include "data.h"
-#include "fdata.h"
+#include "fpu.h"
 #include "assembly.h"
 
 /* execute のなかから使う。長くなるから分離しただけ。*/
@@ -110,8 +110,8 @@ signed char f_execute(struct instruction instruction){
     else if(instruction.funct7==0b1101000){
       if(instruction.funct3==rm&&instruction.rs2_index==0b00000){
         int32_t rs1 = load_regster(instruction.rs1_index);
-        float value = (float)rs1;
-        f_store_register(instruction.rd_index, *((int32_t *)&value));
+        int32_t value = fcvt_s_w_wrap(rs1);
+        f_store_register(instruction.rd_index, value);
       }
       else return -1;
     }
@@ -141,15 +141,11 @@ signed char f_execute(struct instruction instruction){
       }
       // flt.s
       else if(instruction.funct3==0b001){
-        float frs1 = (float)rs1;
-        float frs2 = (float)rs2;
-        if(frs1<frs2) value = 1;
+        value = flt_s_wrap(rs1, rs2);
       }
       // fle.s
       else if(instruction.funct3==0b000){
-        float frs1 = (float)rs1;
-        float frs2 = (float)rs2;
-        if(frs1<=frs2) value = 1;
+        value = flt_s_wrap(rs1, rs2);
       }
       else return -1;
       store_register(instruction.rd_index, value);

@@ -21,4 +21,16 @@ int index_memory(int32_t address);  // addressからindexに変換。範囲外�
 int32_t load_memory(int index);
 void store_memory(int index, int32_t value);
 
+// ここから浮動小数点数。
+
+// 将来もっと細かいレベルでコアを見たくなったときのために。
+int32_t rm;
+int32_t fcsr;
+
+// 整数のときと同じ。参照する配列が違うだけ。
+void f_show_registers();
+int f_index_register(char *name);
+int32_t f_load_regster(int index);
+void f_store_register(int index, int32_t value);
+
 #endif
