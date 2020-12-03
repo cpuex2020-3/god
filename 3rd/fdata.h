@@ -5,13 +5,10 @@
 int32_t rm;
 int32_t fcsr;
 
-// 整数のときと大体同じ。
+// 整数のときと同じ。参照する配列が違うだけ。
 void f_show_registers();
 int f_index_register(char *name);
-float f_load_regster(int index);
-void f_store_register(int index, float value);
-// メモリ操作だけ少し変わってて、メモリとレジスタの間での受け渡しを関数内で行う形になってる。
-void f_load_memory(int index_add, int index_f_reg);
-void f_store_memory(int index_add, int index_f_reg);
+int32_t f_load_regster(int index);
+void f_store_register(int index, int32_t value);
 
 #endif
