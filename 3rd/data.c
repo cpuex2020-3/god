@@ -73,7 +73,7 @@ int32_t load_regster(int index){
 }
 
 void store_register(int index, int32_t value){
-  registers[index] = value;
+  if(index!=0) registers[index] = value;
   return;
 }
 

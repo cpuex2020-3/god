@@ -14,88 +14,95 @@ signed char f_execute(struct instruction instruction){
     int32_t mem_address = load_regster(instruction.rs1_index)+instruction.imm;
     int mem_index = index_memory(mem_address);
     if(mem_index<0) return -1;
+    int32_t value = load_memory(mem_index);
     // flw
     if(instruction.funct3==0b010){
-      f_load_memory(mem_index, instruction.rd_index);
     }
     else return -1;
+    f_store_register(instruction.rd_index, value);
   }
   // STORE-FP
   else if(instruction.opcode==0b0100111){
     int32_t mem_address = load_regster(instruction.rs1_index)+instruction.imm;
     int mem_index = index_memory(mem_address);
     if(mem_index<0) return -1;
+    int32_t value = f_load_regster(instruction.rs2_index);
     // fsw
     if(instruction.funct3==0b010){
-      f_store_memory(mem_index, instruction.rs2_index);
     }
     else return -1;
+    store_memory(mem_index, value);
   }
   // OP-FP
   else if(instruction.opcode==0b1010011){
     // fadd.s
     if(instruction.funct7==0b0000000){
       if(instruction.funct3==rm){
-        float rs1 = f_load_regster(instruction.rs1_index);
-        float rs2 = f_load_regster(instruction.rs2_index);
-        f_store_register(instruction.rd_index, rs1+rs2);
+        int32_t rs1 = f_load_regster(instruction.rs1_index);
+        int32_t rs2 = f_load_regster(instruction.rs2_index);
+        float value = (*((float *)&rs1))+(*((float *)&rs2));
+        f_store_register(instruction.rd_index, *((int32_t *)&value));
       }
     }
     // fsub.s
     else if(instruction.funct7==0b0000100){
       if(instruction.funct3==rm){
-        float rs1 = f_load_regster(instruction.rs1_index);
-        float rs2 = f_load_regster(instruction.rs2_index);
-        f_store_register(instruction.rd_index, rs1-rs2);
+        int32_t rs1 = f_load_regster(instruction.rs1_index);
+        int32_t rs2 = f_load_regster(instruction.rs2_index);
+        float value = (*((float *)&rs1))-(*((float *)&rs2));
+        f_store_register(instruction.rd_index, *((int32_t *)&value));
       }
     }
     // fmul.s
     else if(instruction.funct7==0b0001000){
       if(instruction.funct3==rm){
-        float rs1 = f_load_regster(instruction.rs1_index);
-        float rs2 = f_load_regster(instruction.rs2_index);
-        f_store_register(instruction.rd_index, rs1*rs2);
+        int32_t rs1 = f_load_regster(instruction.rs1_index);
+        int32_t rs2 = f_load_regster(instruction.rs2_index);
+        float value = (*((float *)&rs1))*(*((float *)&rs2));
+        f_store_register(instruction.rd_index, *((int32_t *)&value));
       }
     }
     // fdiv.s
     else if(instruction.funct7==0b0001100){
       if(instruction.funct3==rm){
-        float rs1 = f_load_regster(instruction.rs1_index);
-        float rs2 = f_load_regster(instruction.rs2_index);
-        f_store_register(instruction.rd_index, rs1/rs2);
+        int32_t rs1 = f_load_regster(instruction.rs1_index);
+        int32_t rs2 = f_load_regster(instruction.rs2_index);
+        float value = (*((float *)&rs1))/(*((float *)&rs2));
+        f_store_register(instruction.rd_index, *((int32_t *)&value));
       }
     }
     // fsqrt.s
     else if(instruction.funct7==0b0101100){
       if(instruction.funct3==rm&&instruction.rs2_index==0b00000){
-        float rs1 = f_load_regster(instruction.rs1_index);
-        f_store_register(instruction.rd_index, sqrtf(rs1));
+        int32_t rs1 = f_load_regster(instruction.rs1_index);
+        float value = sqrtf(*((float *)&rs1));
+        f_store_register(instruction.rd_index, *((int32_t *)&value));
       }
       else return -1;
     }
     else if(instruction.funct7==0b0010000){
-      float rs1 = f_load_regster(instruction.rs1_index);
-      float rs2 = f_load_regster(instruction.rs2_index);
+      int32_t rs1 = f_load_regster(instruction.rs1_index);
+      int32_t rs2 = f_load_regster(instruction.rs2_index);
       // fsgnj.s
       if(instruction.funct3==0b000){
-        int32_t int1 = (*((int32_t *)&rs1))&0x7fffffff;
-        int32_t int2 = (*((int32_t *)&rs2))&0x80000000;
+        int32_t int1 = rs1&0x7fffffff;
+        int32_t int2 = rs2&0x80000000;
         int32_t value = int1|int2;
-        f_store_register(instruction.rd_index, *((float *)&value));
+        f_store_register(instruction.rd_index, value);
       }
       // fsgnjn.s
       else if(instruction.funct3==0b001){
-        int32_t int1 = (*((int32_t *)&rs1))&0x80000000;
-        int32_t int2 = (*((int32_t *)&rs2))&0x80000000;
+        int32_t int1 = rs1|0x80000000;
+        int32_t int2 = rs2&0x80000000;
         int32_t value = int1^int2;
-        f_store_register(instruction.rd_index, *((float *)&value));
+        f_store_register(instruction.rd_index, value);
       }
       // fsgnjx.s
       else if(instruction.funct3==0b010){
-        int32_t int1 = (*((int32_t *)&rs1));
-        int32_t int2 = (*((int32_t *)&rs2))&0x80000000;
+        int32_t int1 = rs1;
+        int32_t int2 = rs2&0x80000000;
         int32_t value = int1^int2;
-        f_store_register(instruction.rd_index, *((float *)&value));
+        f_store_register(instruction.rd_index, value);
       }
       else return -1;
     }
@@ -103,7 +110,8 @@ signed char f_execute(struct instruction instruction){
     else if(instruction.funct7==0b1101000){
       if(instruction.funct3==rm&&instruction.rs2_index==0b00000){
         int32_t rs1 = load_regster(instruction.rs1_index);
-        f_store_register(instruction.rd_index, (float)rs1);
+        float value = (float)rs1;
+        f_store_register(instruction.rd_index, *((int32_t *)&value));
       }
       else return -1;
     }
@@ -111,38 +119,40 @@ signed char f_execute(struct instruction instruction){
     else if(instruction.funct7==0b1111000){
       if(instruction.funct3==0b000&&instruction.rs2_index==0b00000){
         int32_t rs1 = load_regster(instruction.rs1_index);
-        f_store_register(instruction.rd_index, *((float *)&rs1));
+        f_store_register(instruction.rd_index, rs1);
       }
       else return -1;
     }
     // fmv.w.s
     else if(instruction.funct7==0b1110000){
       if(instruction.funct3==0b000&&instruction.rs2_index==0b00000){
-        float rs1 = f_load_regster(instruction.rs1_index);
-        store_register(instruction.rd_index, *((int32_t *)&rs1));
+        int32_t rs1 = f_load_regster(instruction.rs1_index);
+        store_register(instruction.rd_index, rs1);
       }
       else return -1;
     }
     else if(instruction.funct7==0b1010000){
       int32_t value = 0;
-      float rs1 = f_load_regster(instruction.rs1_index);
-      float rs2 = f_load_regster(instruction.rs2_index);
+      int32_t rs1 = f_load_regster(instruction.rs1_index);
+      int32_t rs2 = f_load_regster(instruction.rs2_index);
       // feq.s
       if(instruction.funct3==0b010){
         if(rs1==rs2) value = 1;
-        store_register(instruction.rd_index, value);
       }
       // flt.s
       else if(instruction.funct3==0b001){
-        if(rs1<rs2) value = 1;
-        store_register(instruction.rd_index, value);
+        float frs1 = (float)rs1;
+        float frs2 = (float)rs2;
+        if(frs1<frs2) value = 1;
       }
       // fle.s
       else if(instruction.funct3==0b000){
-        if(rs1<=rs2) value = 1;
-        store_register(instruction.rd_index, value);
+        float frs1 = (float)rs1;
+        float frs2 = (float)rs2;
+        if(frs1<=frs2) value = 1;
       }
       else return -1;
+      store_register(instruction.rd_index, value);
     }
     else return -1;
   }
@@ -165,7 +175,7 @@ signed char execute(struct instruction instruction){
     if(instruction.funct3==0b010){
     }
     else return -1;
-    if(instruction.rd_index!=0) store_register(instruction.rd_index, value);
+    store_register(instruction.rd_index, value);
     pc = pc+4;
   }
   // STORE
@@ -236,7 +246,7 @@ signed char execute(struct instruction instruction){
       if((uint32_t)rs1<(uint32_t)rs2) value = 1;
     }
     else return -1;
-    if(instruction.rd_index!=0) store_register(instruction.rd_index, value);
+    store_register(instruction.rd_index, value);
     pc = pc+4;
   }
   // OP-IMM
@@ -283,7 +293,7 @@ signed char execute(struct instruction instruction){
       if((uint32_t)rs1<(uint32_t)instruction.imm) value = 1;
     }
     else return -1;
-    if(instruction.rd_index!=0) store_register(instruction.rd_index, value);
+    store_register(instruction.rd_index, value);
     pc = pc+4;
   }
   // BRANCH
@@ -321,24 +331,24 @@ signed char execute(struct instruction instruction){
   // lui
   else if(instruction.opcode==0b0110111){
     int32_t value = instruction.imm<<12;
-    if(instruction.rd_index!=0) store_register(instruction.rd_index, value);
+    store_register(instruction.rd_index, value);
     pc = pc+4;
   }
   // auipc
   else if(instruction.opcode==0b0010111){
     int32_t value = instruction.imm<<12;
-    if(instruction.rd_index!=0) store_register(instruction.rd_index, pc+value);
+    store_register(instruction.rd_index, pc+value);
     pc = pc+4;
   }
   // jal
   else if(instruction.opcode==0b1101111){
-    if(instruction.rd_index!=0) store_register(instruction.rd_index, pc+4);
+    store_register(instruction.rd_index, pc+4);
     pc = pc+instruction.imm;
   }
   // jalr
   else if(instruction.opcode==0b1100111){
     if(instruction.funct3==0b000){
-      if(instruction.rd_index!=0) store_register(instruction.rd_index, pc+4);
+      store_register(instruction.rd_index, pc+4);
       pc = load_regster(instruction.rs1_index)+instruction.imm;
     }
     else return -1;
@@ -358,16 +368,16 @@ signed char execute(struct instruction instruction){
       else return -1;
     }
     else return -1;
-    if(instruction.rd_index!=0) store_register(instruction.rd_index, value);
+    store_register(instruction.rd_index, value);
     pc = pc+4;
   }
   // rxbu
   else if(instruction.opcode==0b0001011){
-    printf("plz UART for rxbu : ");
+    // printf("plz UART for rxbu : ");
     scanf("%d", &uart);
     if(uart<0||uart>=256) return -1;
     int32_t rd = load_regster(instruction.rd_index)&0xffffff00;
-    if(instruction.rd_index!=0) store_register(instruction.rd_index, rd+uart);
+    store_register(instruction.rd_index, rd+uart);
     pc = pc+4;
   }
   // txbu
