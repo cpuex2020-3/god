@@ -243,7 +243,6 @@ int32_t fsub_s_wrap(int32_t rs1, int32_t rs2){
 }
 
 // fmul_s
-
 reg_t fmul_s(reg_t x1, reg_t x2) {
     // step 1
     unsigned s1 = x1.bits.sign;
