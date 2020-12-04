@@ -1,6 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
 #include "reg_t.h"
 
 reg_t flt_s(reg_t x1, reg_t x2) {

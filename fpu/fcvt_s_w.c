@@ -1,6 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
 #include "reg_t.h"
 
 reg_t srai(reg_t x, int shamt) {

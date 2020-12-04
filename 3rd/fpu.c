@@ -1,7 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <math.h>
 
 typedef union myreg {
     unsigned x;
@@ -14,7 +11,7 @@ typedef union myreg {
 } reg_t;
 
 reg_t convert_i_r(int32_t uo){
-  reg_t x = {.x = (uint32_t)uo};
+  reg_t x = {.x = (unsigned)uo};
   return x;
 }
 
@@ -257,6 +254,7 @@ int32_t fdiv_s_wrap(int32_t rs1, int32_t rs2){
 }
 
 // fsqrt_s
+#include <math.h>
 int32_t fsqrt_s_wrap(int32_t rs1){
   float value = sqrtf(*((float *)&rs1));
   return (*((int32_t *)&value));
