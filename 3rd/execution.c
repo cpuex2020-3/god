@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <math.h>
 #include "instruction.h"
 #include "data.h"
 #include "fpu.h"
@@ -58,8 +57,8 @@ signed char f_execute(struct instruction instruction){
       if(instruction.funct3==rm){
         int32_t rs1 = f_load_regster(instruction.rs1_index);
         int32_t rs2 = f_load_regster(instruction.rs2_index);
-        float value = (*((float *)&rs1))*(*((float *)&rs2));
-        f_store_register(instruction.rd_index, *((int32_t *)&value));
+        float value = fmul_s_wrap(rs1, rs2);
+        f_store_register(instruction.rd_index, value);
       }
     }
     // fdiv.s
@@ -67,16 +66,16 @@ signed char f_execute(struct instruction instruction){
       if(instruction.funct3==rm){
         int32_t rs1 = f_load_regster(instruction.rs1_index);
         int32_t rs2 = f_load_regster(instruction.rs2_index);
-        float value = (*((float *)&rs1))/(*((float *)&rs2));
-        f_store_register(instruction.rd_index, *((int32_t *)&value));
+        int32_t value = fdiv_s_wrap(rs1, rs2);
+        f_store_register(instruction.rd_index, value);
       }
     }
     // fsqrt.s
     else if(instruction.funct7==0b0101100){
       if(instruction.funct3==rm&&instruction.rs2_index==0b00000){
         int32_t rs1 = f_load_regster(instruction.rs1_index);
-        float value = sqrtf(*((float *)&rs1));
-        f_store_register(instruction.rd_index, *((int32_t *)&value));
+        int32_t value = fsqrt_s_wrap(rs1);
+        f_store_register(instruction.rd_index, value);
       }
       else return -1;
     }

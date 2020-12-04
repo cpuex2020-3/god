@@ -22,7 +22,7 @@ int32_t convert_r_i(reg_t uo){
   return ((int32_t)(uo.x));
 }
 
-// fadd
+// fadd_s
 unsigned slice(unsigned x, unsigned h, unsigned l) {
     unsigned mask = ((1 << h) - (1 << l)) | (1 << h);
     return (x & mask) >> l;
@@ -242,6 +242,24 @@ int32_t fsub_s_wrap(int32_t rs1, int32_t rs2){
   reg_t r_rs2 = convert_i_r(rs2);
   reg_t r_rd  = fsub_s(r_rs1, r_rs2);
   return convert_r_i(r_rd);
+}
+
+// fmul_s
+int32_t fmul_s_wrap(int32_t rs1, int32_t rs2){
+  float value = (*((float *)&rs1))*(*((float *)&rs2));
+  return (*((int32_t *)&value));
+}
+
+// fdiv_s
+int32_t fdiv_s_wrap(int32_t rs1, int32_t rs2){
+  float value = (*((float *)&rs1))/(*((float *)&rs2));
+  return (*((int32_t *)&value));
+}
+
+// fsqrt_s
+int32_t fsqrt_s_wrap(int32_t rs1){
+  float value = sqrtf(*((float *)&rs1));
+  return (*((int32_t *)&value));
 }
 
 // fcvt_s_w
