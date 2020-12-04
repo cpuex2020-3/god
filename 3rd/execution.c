@@ -144,7 +144,7 @@ signed char f_execute(struct instruction instruction){
       }
       // fle.s
       else if(instruction.funct3==0b000){
-        value = flt_s_wrap(rs1, rs2);
+        value = fle_s_wrap(rs1, rs2);
       }
       else return -1;
       store_register(instruction.rd_index, value);
