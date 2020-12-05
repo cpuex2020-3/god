@@ -136,7 +136,9 @@ signed char f_execute(struct instruction instruction){
       int32_t rs2 = f_load_regster(instruction.rs2_index);
       // feq.s
       if(instruction.funct3==0b010){
-        if(rs1==rs2) value = 1;
+        int32_t abs1 = rs1 & 0x7fffffff;
+        int32_t abs2 = rs2 & 0x7fffffff;
+        if(rs1==rs2||(abs1==0&&abs2==0)) value = 1;
       }
       // flt.s
       else if(instruction.funct3==0b001){
