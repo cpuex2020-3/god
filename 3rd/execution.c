@@ -373,8 +373,7 @@ signed char execute(struct instruction instruction){
     // printf("plz UART for rxbu : ");
     scanf("%d", &uart);
     if(uart<0||uart>=256) return -1;
-    int32_t rd = load_regster(instruction.rd_index)&0xffffff00;
-    store_register(instruction.rd_index, rd+uart);
+    store_register(instruction.rd_index, uart);
     pc = pc+4;
   }
   // txbu

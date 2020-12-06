@@ -5,12 +5,33 @@
 
 .globl min_caml_read_int
 min_caml_read_int:
-  read_int
+  rxbu t1
+  or a0, zero, t1
+  slli a0, a0, 8
+  rxbu t1
+  or a0, a0, t1
+  slli a0, a0, 8
+  rxbu t1
+  or a0, a0, t1
+  slli a0, a0, 8
+  rxbu t1
+  or a0, a0, t1
   ret
 
 .globl min_caml_read_float
 min_caml_read_float:
-  read_float
+  rxbu t1
+  or a0, zero, t1
+  slli a0, a0, 8
+  rxbu t1
+  or a0, a0, t1
+  slli a0, a0, 8
+  rxbu t1
+  or a0, a0, t1
+  slli a0, a0, 8
+  rxbu t1
+  or a0, a0, t1
+  fmv.s.w fa0, t1
   ret
 
 .globl min_caml_print_newline

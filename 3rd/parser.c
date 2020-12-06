@@ -1488,27 +1488,6 @@ signed char instruction(char t[256]){
     store_text(i,type_X);
     text_address = text_address+4;
   }
-  else if(eqlstr(t,"read_int")==0){
-    if(s[i_s]!='\0') return -1;
-    if(re_instruction("rxbu", "a0")<0) return -1;
-    if(re_instruction("slli", "a0, a0, 8")<0) return -1;
-    if(re_instruction("rxbu", "a0")<0) return -1;
-    if(re_instruction("slli", "a0, a0, 8")<0) return -1;
-    if(re_instruction("rxbu", "a0")<0) return -1;
-    if(re_instruction("slli", "a0, a0, 8")<0) return -1;
-    if(re_instruction("rxbu", "a0")<0) return -1;
-  }
-  else if(eqlstr(t,"read_float")==0){
-    if(s[i_s]!='\0') return -1;
-    if(re_instruction("rxbu", "t1")<0) return -1;
-    if(re_instruction("slli", "t1, t1, 8")<0) return -1;
-    if(re_instruction("rxbu", "t1")<0) return -1;
-    if(re_instruction("slli", "t1, t1, 8")<0) return -1;
-    if(re_instruction("rxbu", "t1")<0) return -1;
-    if(re_instruction("slli", "t1, t1, 8")<0) return -1;
-    if(re_instruction("rxbu", "t1")<0) return -1;
-    if(re_instruction("fmv.s.w", "fa0, t1")<0) return -1;
-  }
   else if(eqlstr(t,"halt")==0){
     if(s[i_s]!='\0') return -1;
     struct instruction halt;

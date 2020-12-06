@@ -85,13 +85,7 @@ struct label_list* get_text_labels(char *file_name){
         else if(eqlstr(t,".text")==0) mode = 0;
       }
       else if(mode==0){
-        if(eqlstr(t,"read_float")==0){
-          text_address = text_address+32;
-        }
-        else if(eqlstr(t,"read_int")==0){
-          text_address = text_address+28;
-        }
-        else if(eqlstr(t,"mod10")==0){
+        if(eqlstr(t,"mod10")==0){
           text_address = text_address+12;
         }
         else if(t[0]=='b'||eqlstr(t,"jal")==0||eqlstr(t,"j")==0){
