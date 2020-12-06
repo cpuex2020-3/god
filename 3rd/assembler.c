@@ -123,7 +123,7 @@ signed char binary(struct instruction instruction){
     print_uo(instruction.opcode, 7);
   }
   // LOAD-FP Fmt:I
-  if(instruction.opcode==0b0000111){
+  else if(instruction.opcode==0b0000111){
     print_uo(instruction.imm, 12);
     print_uo(instruction.rs1_index, 5);
     print_uo(instruction.funct3, 3);
@@ -150,7 +150,7 @@ signed char binary(struct instruction instruction){
   }
   else return -10;
   return 0;
-};
+}
 
 signed char assemble(char *output_file){
   fp = fopen(output_file, "w");
