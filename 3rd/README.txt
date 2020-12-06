@@ -48,7 +48,7 @@ sを指定：inputをステップ実行します。
 	jal label_textの、raではなくzero版。
 ・jalr rs1
 	jalr ra, rs1, 0
-・mod10 rd, rs1
+・mod10 rd, rs1 // rs1の中身が正の倍数なら必ず正しい値を返す。
 	div10 t1, rs1
 	mul10 t1, t1
 	sub   rd, rs1, t1
