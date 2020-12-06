@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <math.h>
+#include <stdint.h>
 
 typedef union myreg {
     unsigned x;

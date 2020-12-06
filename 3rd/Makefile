@@ -1,24 +1,26 @@
+CFLAGS = -lm -Wall
+
 god_float: main.o instruction.o data.o fpu.o labels.o parser.o execution.o assembler.o assembly.o
-	gcc -Wall main.o instruction.o data.o fpu.o labels.o parser.o execution.o assembler.o assembly.o -o god_float
+	gcc -o god_float main.o instruction.o data.o fpu.o labels.o parser.o execution.o assembler.o assembly.o $(CFLAGS)
 
 main.o: main.c
-	gcc -Wall -c main.c
+	gcc $(CFLAGS) -c main.c
 instruction.o: instruction.c
-	gcc -Wall -c instruction.c
+	gcc $(CFLAGS) -c instruction.c
 data.o: data.c
-	gcc -Wall -c data.c
+	gcc $(CFLAGS) -c data.c
 fpu.o: fpu.c
-	gcc -Wall -c fpu.c
+	gcc $(CFLAGS) -c fpu.c
 labels.o: labels.c
-	gcc -Wall -c labels.c
+	gcc $(CFLAGS) -c labels.c
 parser.o: parser.c
-	gcc -Wall -c parser.c
+	gcc $(CFLAGS) -c parser.c
 execution.o: execution.c
-	gcc -Wall -c execution.c
+	gcc $(CFLAGS) -c execution.c
 assembler.o: assembler.c
-	gcc -Wall -c assembler.c
+	gcc $(CFLAGS) -c assembler.c
 assembly.o: assembly.c
-	gcc -Wall -c assembly.c
+	gcc $(CFLAGS) -c assembly.c
 
 clean:
 	rm -f *.o god_float
