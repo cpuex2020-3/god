@@ -1,4 +1,6 @@
 
+# written by God
+
 # read and print
 
 .text
@@ -133,6 +135,52 @@ min_caml_print_int:
   txbu  s2
   ret
 
+# ftoi
+
+.globl min_caml_int_of_float
+min_caml_int_of_float:
+	fmv.w.s a0, fa0
+	srli    t1, a0, 23
+	andi    t1, t1, 255  # 0x000000ff
+	addi    t1, t1, -126
+	bge     t1, zero, 12
+	addi    a0, zero, 0
+	ret
+	slti    t2, a0, 0
+	li      t3, 8388607  # 0x007fffff
+	and     a0, a0, t3
+	addi    t3, t3, 1
+	or	    a0, a0, t3
+	addi	  t1, t1, -23
+	bge	    t1, zero, 16
+	sub	    t1, zero, t1
+	srl	    a0, a0, t1
+  jal     zero, 8
+	sll	    a0, a0, t1
+	addi	  a0, a0, 1
+	srli	  a0, a0, 1
+	beq	    t2, zero, 8
+	sub	    a0, zero, a0
+	ret
+
+.globl min_caml_floor
+min_caml_floor:
+  fmv       ft0, fa0
+  sw	a0, 4(s0)
+	sw	ra, 8(s0)
+  addi	s0, s0, 12
+	jal	min_caml_int_of_float
+  fcvt.s.w fa0, a0
+	addi	s0, s0, -12
+  lw	ra, 8(s0)
+	lw	a0, 4(s0)
+  flt.s	t3, ft0, fa0
+  fcvt.s.w ft0, t3
+  fsub.s	fa0, fa0, ft0
+  ret
+
+
+# written by Joe Hattori
 
 # tri.s
 	.data
@@ -397,8 +445,6 @@ l.ten:	# 10.0
 	.word	0x41200000
 l.point5:	# 0.5
 	.word	0x3f000000
-l.ftoi_cmp: # 8388608.0
-	.word	0x4b000000
 	.text
 	.globl min_caml_create_array
 min_caml_create_array:
@@ -477,70 +523,6 @@ min_caml_truncate:
 	beq	t2, zero, truncate_end
 	sub	a0, zero, a0
 truncate_end:
-	ret
-	.globl min_caml_int_of_float
-min_caml_int_of_float:
-	la	t2, l.zero
-	flw	ft0, 0(t2)
-	flt.s	t2, fa0, ft0
-	fsgnjx.s	ft1, fa0, fa0
-	la	t6, l.ftoi_cmp
-	flw	ft0, 0(t6)
-	li	t4, 1258291200
-	flt.s	t3, ft1, ft0
-	beq	t3, zero, ftoi_else
-	fadd.s	ft1, ft1, ft0
-	fmv.w.s	a0, ft1
-	sub	a0, a0, t4
-	beq	t2, zero, ftoi_end
-	sub	a0, zero, a0
-ftoi_end:
-	ret
-ftoi_else:
-	li	t5, 0
-ftoi_cont:
-	flt.s	t3, ft1, ft0
-	bne	t3, zero, ftoi_sum
-	fsub.s	ft1, ft1, ft0
-	addi	t5, t5, 1
-	j	ftoi_cont
-ftoi_sum:
-	fadd.s	ft1, ft1, ft0
-	fmv.w.s	a0, ft1
-	sub	a0, a0, t4
-	li	t4, 8388608
-ftoi_loop:
-	bne	t5, zero, ftoi_sum_cont
-	beq	t2, zero, ftoi_end
-	sub	a0, zero, a0
-	ret
-ftoi_sum_cont:
-	addi	t5, t5, -1
-	add	a0, a0, t4
-	j	ftoi_loop
-
-	.globl min_caml_floor
-min_caml_floor:
-	la	t6, l.ftoi_cmp
-	flw	ft0, 0(t6)
-	fsgnjx.s	ft1, fa0, fa0
-	fsgnj.s	ft2, fa0, fa0
-	flt.s	t3, ft1, ft0
-	beq	t3, zero, floor_ret
-	sw	a0, 4(s0)
-	sw	ra, 8(s0)
-	addi	s0, s0, 12
-	jal	min_caml_int_of_float
-	jal	min_caml_float_of_int
-	addi	s0, s0, -12
-	lw	ra, 8(s0)
-	lw	a0, 4(s0)
-	flt.s	t3, ft2, fa0
-	beq	t3, zero, floor_ret
-	la	t6, l.one
-	flw	ft2, 0(t6)
-	fsub.s	fa0, fa0, ft2
-floor_ret:
 	ret
 
 	.globl min_caml_fiszero

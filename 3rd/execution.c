@@ -48,7 +48,7 @@ signed char f_execute(struct instruction instruction){
       if(instruction.funct3==rm){
         int32_t rs1 = f_load_regster(instruction.rs1_index);
         int32_t rs2 = f_load_regster(instruction.rs2_index);
-        float value = fsub_s_wrap(rs1, rs2);
+        int32_t value = fsub_s_wrap(rs1, rs2);
         f_store_register(instruction.rd_index, value);
       }
     }
