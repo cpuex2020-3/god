@@ -1,11 +1,6 @@
 #include <stdio.h>
 #include "reg_t.h"
 
-unsigned slice(unsigned x, unsigned h, unsigned l) {
-    unsigned mask = ((1 << h) - (1 << l)) | (1 << h);
-    return (x & mask) >> l;
-}
-
 reg_t fmul_s(reg_t x1, reg_t x2) {
     // step 1
     unsigned s1 = x1.bits.sign;

@@ -1,5 +1,5 @@
-#ifndef FPU_H_INCLUDED
-#define FPU_H_INCLUDED
+#ifndef FPU_WRAP_H_INCLUDED
+#define FPU_WRAP_H_INCLUDED
 
 int32_t fadd_s_wrap(int32_t rs1, int32_t rs2);
 int32_t fsub_s_wrap(int32_t rs1, int32_t rs2);

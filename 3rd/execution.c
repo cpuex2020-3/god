@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include "instruction.h"
 #include "data.h"
-#include "fpu.h"
+#include "fpu_wrap.h"
 #include "assembly.h"
 
 /* execute のなかから使う。長くなるから分離しただけ。*/

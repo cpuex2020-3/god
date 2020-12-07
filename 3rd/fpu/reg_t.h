@@ -11,4 +11,8 @@ typedef union myreg {
     } __attribute((packed)) bits;
 } reg_t;
 
+unsigned slice(unsigned x, unsigned h, unsigned l);
+unsigned long slicel(unsigned long x, unsigned h, unsigned l);
+unsigned fmt(unsigned x, unsigned w);
+
 #endif
