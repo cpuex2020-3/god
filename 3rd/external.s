@@ -157,7 +157,12 @@ min_caml_print_int:
   lw s11, 44(s0)
   ret
 
-# ftoi
+# itof and ftoi
+
+.globl min_caml_float_of_int
+min_caml_float_of_int:
+	fcvt.s.w	fa0, a0
+	ret
 
 .globl min_caml_int_of_float
 min_caml_int_of_float:
@@ -187,18 +192,35 @@ min_caml_int_of_float:
 
 .globl min_caml_floor
 min_caml_floor:
-  fmv       ft0, fa0
-  sw	a0, 4(s0)
-	sw	ra, 8(s0)
-  addi	s0, s0, 12
+  fmv      ft0, fa0
+  sw	     a0, 4(s0)
+	sw	     ra, 8(s0)
+  addi	   s0, s0, 12
 	jal	min_caml_int_of_float
   fcvt.s.w fa0, a0
-	addi	s0, s0, -12
-  lw	ra, 8(s0)
-	lw	a0, 4(s0)
-  flt.s	t3, ft0, fa0
-  fcvt.s.w ft0, t3
-  fsub.s	fa0, fa0, ft0
+	addi	   s0, s0, -12
+  lw	     ra, 8(s0)
+	lw	     a0, 4(s0)
+  flt.s	   t1, ft0, fa0
+  fcvt.s.w ft0, t1
+  fsub.s	 fa0, fa0, ft0
+  ret
+
+.globl min_caml_truncate
+min_caml_truncate:
+  fmv      ft1, fa0
+  fabs     fa0, fa0
+  sw	     ra, 4(s0)
+  addi	   s0, s0, 8
+  jal	min_caml_floor
+  jal	min_caml_int_of_float
+  addi	   s0, s0, -8
+  lw	     ra, 4(s0)
+  fmv.s.w  fa0, zero
+  flt.s	   t1, ft1, fa0
+  beq      t1, zero, 8
+  sub   	 a0, zero, a0
+  fmv      fa0, ft1
   ret
 
 
@@ -523,28 +545,6 @@ min_caml_fhalf:
 	la	t2, l.point5
 	flw	ft0, 0(t2)
 	fmul.s	fa0, fa0, ft0
-	ret
-	.globl min_caml_float_of_int
-min_caml_float_of_int:
-	fcvt.s.w	fa0, a0
-	ret
-	.globl min_caml_truncate
-min_caml_truncate:
-	la	t2, l.zero
-	flw	ft0, 0(t2)
-	flt.s	t2, fa0, ft0
-	fsgnjx.s	fa0, fa0, fa0
-	sw	ra,	4(s0)
-	sw	t2, 8(s0)
-	addi	s0, s0, 12
-	jal	min_caml_floor
-	jal	min_caml_int_of_float
-	addi	s0, s0, -12
-	lw	t2, 8(s0)
-	lw	ra,	4(s0)
-	beq	t2, zero, truncate_end
-	sub	a0, zero, a0
-truncate_end:
 	ret
 
 	.globl min_caml_fiszero
