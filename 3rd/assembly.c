@@ -15,7 +15,7 @@ signed char assembly(struct instruction instruction, FILE *fp){
       fprintf(fp, "lw   ");
     }
     else return -10;
-    fprintf(fp, " x%d, %d(x%d)\n", instruction.rd_index, instruction.imm, instruction.rs1_index);
+    fprintf(fp, " %s, %d(%s)\n", reverse_register(instruction.rd_index), instruction.imm, reverse_register(instruction.rs1_index));
   }
   // STORE Fmt:S
   else if(instruction.opcode==0b0100011){
@@ -23,7 +23,7 @@ signed char assembly(struct instruction instruction, FILE *fp){
       fprintf(fp, "sw   ");
     }
     else return -10;
-    fprintf(fp, " x%d, %d(x%d)\n", instruction.rs2_index, instruction.imm, instruction.rs1_index);
+    fprintf(fp, " %s, %d(%s)\n", reverse_register(instruction.rs2_index), instruction.imm, reverse_register(instruction.rs1_index));
   }
   // OP Fmt:R
   else if(instruction.opcode==0b0110011){
@@ -68,7 +68,7 @@ signed char assembly(struct instruction instruction, FILE *fp){
       fprintf(fp, "sltu ");
     }
     else return -10;
-    fprintf(fp, " x%d, x%d, x%d\n", instruction.rd_index, instruction.rs1_index, instruction.rs2_index);
+    fprintf(fp, " %s, %s, %s\n", reverse_register(instruction.rd_index), reverse_register(instruction.rs1_index), reverse_register(instruction.rs2_index));
   }
   // OP-IMM Fmt:I
   else if(instruction.opcode==0b0010011){
@@ -107,7 +107,7 @@ signed char assembly(struct instruction instruction, FILE *fp){
       fprintf(fp, "sltiu");
     }
     else return -10;
-    fprintf(fp, " x%d, x%d, %d\n", instruction.rd_index, instruction.rs1_index, instruction.imm);
+    fprintf(fp, " %s, %s, %d\n", reverse_register(instruction.rd_index), reverse_register(instruction.rs1_index), instruction.imm);
   }
   // BRANCH Fmt:SB
   else if(instruction.opcode==0b1100011){
@@ -135,27 +135,27 @@ signed char assembly(struct instruction instruction, FILE *fp){
       fprintf(fp, "bgeu ");
     }
     else return -10;
-    fprintf(fp, " x%d, x%d, %d\n", instruction.rs1_index, instruction.rs2_index, instruction.imm);
+    fprintf(fp, " %s, %s, %d\n", reverse_register(instruction.rs1_index), reverse_register(instruction.rs2_index), instruction.imm);
   }
   // lui Fmt:U
   else if(instruction.opcode==0b0110111){
     fprintf(fp, "lui  ");
-    fprintf(fp, " x%d, %d\n", instruction.rd_index, instruction.imm);
+    fprintf(fp, " %s, %d\n", reverse_register(instruction.rd_index), instruction.imm);
   }
   // auipc Fmt:U
   else if(instruction.opcode==0b0010111){
     fprintf(fp, "auipc");
-    fprintf(fp, " x%d, %d\n", instruction.rd_index, instruction.imm);
+    fprintf(fp, " %s, %d\n", reverse_register(instruction.rd_index), instruction.imm);
   }
   // jal Fmt:UJ
   else if(instruction.opcode==0b1101111){
     fprintf(fp, "jal  ");
-    fprintf(fp, " x%d, %d\n", instruction.rd_index, instruction.imm);
+    fprintf(fp, " %s, %d\n", reverse_register(instruction.rd_index), instruction.imm);
   }
   // jalr Fmt:I
   else if(instruction.opcode==0b1100111){
     fprintf(fp, "jalr ");
-    fprintf(fp, " x%d, x%d, %d\n", instruction.rd_index, instruction.rs1_index, instruction.imm);
+    fprintf(fp, " %s, %s, %d\n", reverse_register(instruction.rd_index), reverse_register(instruction.rs1_index), instruction.imm);
   }
   // 10 Fmt:X
   else if(instruction.opcode==0b1011011){
@@ -168,23 +168,23 @@ signed char assembly(struct instruction instruction, FILE *fp){
       fprintf(fp, "div10");
     }
     else return -1;
-    fprintf(fp, " x%d, x%d\n", instruction.rd_index, instruction.rs1_index);
+    fprintf(fp, " %s, %s\n", reverse_register(instruction.rd_index), reverse_register(instruction.rs1_index));
   }
   // rxbu Fmt:X
   else if(instruction.opcode==0b0001011){
     fprintf(fp, "rxbu ");
-    fprintf(fp, " x%d\n", instruction.rd_index);
+    fprintf(fp, " %s\n", reverse_register(instruction.rd_index));
   }
   // txbu Fmt:X
   else if(instruction.opcode==0b0011011){
     fprintf(fp, "txbu ");
-    fprintf(fp, " x%d\n", instruction.rs1_index);
+    fprintf(fp, " %s\n", reverse_register(instruction.rs1_index));
   }
   // LOAD-FP Fmt:I
   else if(instruction.opcode==0b0000111){
     if(instruction.funct3==0b010){
       fprintf(fp, "flw  ");
-      fprintf(fp, " f%d, %d(x%d)\n", instruction.rd_index, instruction.imm, instruction.rs1_index);
+      fprintf(fp, " %s, %d(%s)\n", f_reverse_register(instruction.rd_index), instruction.imm, reverse_register(instruction.rs1_index));
     }
     else return -10;
   }
@@ -192,7 +192,7 @@ signed char assembly(struct instruction instruction, FILE *fp){
   else if(instruction.opcode==0b0100111){
     if(instruction.funct3==0b010){
       fprintf(fp, "fsw  ");
-      fprintf(fp, " f%d, %d(x%d)\n", instruction.rs2_index, instruction.imm, instruction.rs1_index);
+      fprintf(fp, " %s, %d(%s)\n", f_reverse_register(instruction.rs2_index), instruction.imm, reverse_register(instruction.rs1_index));
     }
     else return -10;
   }
@@ -200,23 +200,23 @@ signed char assembly(struct instruction instruction, FILE *fp){
   else if(instruction.opcode==0b1010011){
     if(instruction.funct7==0b0000000){
       fprintf(fp, "fadd.s");
-      fprintf(fp, " f%d, f%d, f%d\n", instruction.rd_index, instruction.rs1_index, instruction.rs2_index);
+      fprintf(fp, " %s, %s, %s\n", f_reverse_register(instruction.rd_index), f_reverse_register(instruction.rs1_index), f_reverse_register(instruction.rs2_index));
     }
     else if(instruction.funct7==0b0000100){
       fprintf(fp, "fsub.s");
-      fprintf(fp, " f%d, f%d, f%d\n", instruction.rd_index, instruction.rs1_index, instruction.rs2_index);
+      fprintf(fp, " %s, %s, %s\n", f_reverse_register(instruction.rd_index), f_reverse_register(instruction.rs1_index), f_reverse_register(instruction.rs2_index));
     }
     else if(instruction.funct7==0b0001000){
       fprintf(fp, "fmul.s");
-      fprintf(fp, " f%d, f%d, f%d\n", instruction.rd_index, instruction.rs1_index, instruction.rs2_index);
+      fprintf(fp, " %s, %s, %s\n", f_reverse_register(instruction.rd_index), f_reverse_register(instruction.rs1_index), f_reverse_register(instruction.rs2_index));
     }
     else if(instruction.funct7==0b0001100){
       fprintf(fp, "fdiv.s");
-      fprintf(fp, " f%d, f%d, f%d\n", instruction.rd_index, instruction.rs1_index, instruction.rs2_index);
+      fprintf(fp, " %s, %s, %s\n", f_reverse_register(instruction.rd_index), f_reverse_register(instruction.rs1_index), f_reverse_register(instruction.rs2_index));
     }
     else if(instruction.funct7==0b0101100){
       fprintf(fp, "fsqrt.s");
-      fprintf(fp, " f%d, f%d\n", instruction.rd_index, instruction.rs1_index);
+      fprintf(fp, " %s, %s\n", f_reverse_register(instruction.rd_index), f_reverse_register(instruction.rs1_index));
     }
     else if(instruction.funct7==0b0010000){
       if(instruction.funct3==0b000){
@@ -229,19 +229,19 @@ signed char assembly(struct instruction instruction, FILE *fp){
         fprintf(fp, "fsgnjx.s");
       }
       else return -10;
-      fprintf(fp, " f%d, f%d, f%d\n", instruction.rd_index, instruction.rs1_index, instruction.rs2_index);
+      fprintf(fp, " %s, %s, %s\n", f_reverse_register(instruction.rd_index), f_reverse_register(instruction.rs1_index), f_reverse_register(instruction.rs2_index));
     }
     else if(instruction.funct7==0b1101000){
       fprintf(fp, "fcvt.s.w");
-      fprintf(fp, " x%d, f%d\n", instruction.rd_index, instruction.rs1_index);
+      fprintf(fp, " %s, %s\n", f_reverse_register(instruction.rd_index), reverse_register(instruction.rs1_index));
     }
     else if(instruction.funct7==0b1111000){
       fprintf(fp, "fmv.s.w");
-      fprintf(fp, " f%d, x%d\n", instruction.rd_index, instruction.rs1_index);
+      fprintf(fp, " %s, %s\n", f_reverse_register(instruction.rd_index), reverse_register(instruction.rs1_index));
     }
     else if(instruction.funct7==0b1110000){
       fprintf(fp, "fmv.w.s");
-      fprintf(fp, " x%d, f%d\n", instruction.rd_index, instruction.rs1_index);
+      fprintf(fp, " %s, %s\n", reverse_register(instruction.rd_index), f_reverse_register(instruction.rs1_index));
     }
     else if(instruction.funct7==0b1010000){
       if(instruction.funct3==0b010){
@@ -254,7 +254,8 @@ signed char assembly(struct instruction instruction, FILE *fp){
         fprintf(fp, "fle.s");
       }
       else return -10;
-      fprintf(fp, " x%d, f%d, f%d\n", instruction.rd_index, instruction.rs1_index, instruction.rs2_index);
+
+      fprintf(fp, " %s, %s, %s\n", reverse_register(instruction.rd_index), f_reverse_register(instruction.rs1_index), f_reverse_register(instruction.rs2_index));
     }
     else return -10;
   }

@@ -12,6 +12,7 @@ void free_memory();  // mallocしたmemoryの解放。
 
 // name/addressをindex_uoに渡す。例外処理をしなさーい。 -> indexをload_uo,store_uoに渡す。
 int index_register(char *name);  // abi_nameからindexに変換。ただし存在しないregisterを指している場合は -1。
+char *reverse_register(int index);
 int32_t load_regster(int index);
 void store_register(int index, int32_t value);
 int index_text(int32_t program_counter);  // pcからindexに変換。text領域外参照や4 alignmentされていないを場合は -1。
@@ -30,6 +31,7 @@ int32_t fcsr;
 // 整数のときと同じ。参照する配列が違うだけ。
 void f_show_registers();
 int f_index_register(char *name);
+char *f_reverse_register(int index);
 int32_t f_load_regster(int index);
 void f_store_register(int index, int32_t value);
 

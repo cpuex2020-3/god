@@ -68,6 +68,18 @@ int index_register(char *name){
   return i;
 }
 
+char *reverse_register(int index){
+  if(index==5){
+    return abi_names[32];
+  }
+  else if(index==8){
+    return abi_names[34];
+  }
+  else{
+    return abi_names[index];
+  }
+}
+
 int32_t load_regster(int index){
   return registers[index];
 }
@@ -147,6 +159,10 @@ int f_index_register(char *name){
     }
   }
   return -1;
+}
+
+char *f_reverse_register(int index){
+  return f_abi_names[index];
 }
 
 int32_t f_load_regster(int index){
