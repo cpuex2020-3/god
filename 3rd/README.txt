@@ -2,20 +2,20 @@
 makeするとgod_floatという実行ファイルができます。使い方は次の通り。
 また機能が増えてきたらオプションで変更するようにします。
 
-./god_float input (-option) (output_binary,output_assembly)
+./god_float input (-option) (output) (output) (output)
 
 argがinputだけの場合：
 inputを初めてhaltを実行するまで実行します。txbuされた8bitはcharとしてprintfされます。
 
-optionとして使えるのは「b」「a」「s」の三つです。
-bを指定：output_binaryにバイナリを吐きます。min_caml_startのアドレス(=PCの初期値)を標準出力に吐きます。
-aを指定：output_assemblyにinputから変換された実際に実行される命令列を吐きます。min_caml_startが何命令目を指すか(=実行が開始される位置)を標準出力に吐きます。
+optionとして使えるのは「b」「d」「a」「s」の三つです。
+bを指定：outputに命令列のバイナリを吐きます。min_caml_startのアドレス(=PCの初期値)を標準出力に吐きます。
+dを指定：outputにdata領域の初期値のバイナリを吐きます。
+aを指定：outputにinputから変換された実際に実行される命令列を吐きます。min_caml_startが何命令目を指すか(=実行が開始される位置)を標準出力に吐きます。
 sを指定：inputをステップ実行します。
 
 オプションは複数同時に指定できます。
-・bとaの片方のみを指定した場合、outputファイルの指定は1つで構いません。
-・bまたはaを指定した状態で、かつsを指定しなければ、実行はされません。
-・オプションの処理は指定された順に行い、outputファイルも順に用います。そのためsは最後にするのがオススメです。
+・b,d,aのオプション1つあたり、outputファイルを1つ使います。
+・オプションの処理は指定された順に行い、outputファイルも順に用います。
 
 
 メモ
