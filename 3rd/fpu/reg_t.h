@@ -3,7 +3,6 @@
 
 typedef union myreg {
     unsigned x;
-    float    f;
     struct {
         unsigned mantissa : 23;
         unsigned exp : 8;
