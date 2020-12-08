@@ -423,6 +423,6 @@ signed char matomete(){
       printf("%c", uart);
     }
   }
-  printf("Total: %lld", counter);
+  printf("execution : %lld times\n", counter);
   return 0;
 }
