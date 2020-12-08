@@ -50,6 +50,7 @@ int main(int argc, char *argv[]){
           return 0;
         }
         printf("data assembled\n");
+        printf("sorry for big-endian\n");
         output = output+1;
       }
       else if(op!=0&&argv[2][op]=='a'&&output<argc){
