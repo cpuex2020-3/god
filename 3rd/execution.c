@@ -409,7 +409,8 @@ signed char step(){
 }
 
 signed char matomete(){
-  for(int i = index_text(pc); ; uart = 0, i = index_text(pc)){
+  unsigned long long counter = 1;
+  for(int i = index_text(pc); ; uart = 0, i = index_text(pc), counter++){
     // printf("%d\n", i);
     uart = 0;
     if(i<0) return -1;
@@ -422,5 +423,6 @@ signed char matomete(){
       printf("%c", uart);
     }
   }
+  printf("Total: %lld", counter);
   return 0;
 }
