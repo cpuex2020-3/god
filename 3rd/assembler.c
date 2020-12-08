@@ -167,3 +167,14 @@ signed char assemble(char *output_file){
   fclose(fp);
   return 0;
 }
+
+signed char data_assemble(char *output_file, int size){
+  fp = fopen(output_file, "w");
+  if(fp==NULL) return -1;
+  for(int i = 0 ; i<size; i++){
+    int32_t data = load_memory(i);
+    print_uo(data, 32);
+  }
+  fclose(fp);
+  return 0;
+}

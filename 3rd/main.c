@@ -35,11 +35,21 @@ int main(int argc, char *argv[]){
       }
       else if(op!=0&&argv[2][op]=='b'&&output<argc){
         if(assemble(argv[output])<0){
-          printf("assemble error\n");
+          printf("text assemble error\n");
           free_memory();
           return 0;
         }
+        printf("text assembled\n");
         printf("min_caml_start address : %d\n", pc);
+        output = output+1;
+      }
+      else if(op!=0&&argv[2][op]=='d'&&output<argc){
+        if(data_assemble(argv[output], size_memory)<0){
+          printf("data assemble error\n");
+          free_memory();
+          return 0;
+        }
+        printf("data assembled\n");
         output = output+1;
       }
       else if(op!=0&&argv[2][op]=='a'&&output<argc){
