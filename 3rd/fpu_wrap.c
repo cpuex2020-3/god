@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdint.h>
 #include "fpu/reg_t.h"
 #include "fpu/fadd_s.h"
 #include "fpu/fsub_s.h"

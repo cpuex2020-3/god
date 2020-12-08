@@ -1,6 +1,8 @@
 #ifndef FINV_TABLE_H_INCLUDED
 #define FINV_TABLE_H_INCLUDED
 
+#include <stdint.h>
+
 int32_t finv_table[2048] = {
 0x000FFFFF, 0x00009FF8,
 0x000FF801, 0x00009FE8,
