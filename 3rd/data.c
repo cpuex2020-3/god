@@ -42,6 +42,10 @@ signed char init_data(int32_t size){
     if(rest_memory[i]==NULL){
       return -1;
     }
+    for(size_t j=0; j<size; j++){
+      rest_memory[i][j].value = 0;
+      rest_memory[i][j].indeterminate = 1;
+    }
   }
   registers[0].value = 0;
   registers[1].value = 0;
