@@ -10,10 +10,13 @@
 signed char f_execute(struct instruction instruction){
   // LOAD-FP
   if(instruction.opcode==0b0000111){
-    int32_t mem_address = load_regster(instruction.rs1_index)+instruction.imm;
+    signed char indrs1 = 1, indmem = 1;
+    int32_t mem_address = load_register(instruction.rs1_index, &indrs1)+instruction.imm;
+    if(indrs1>0) return -1;
     int mem_index = index_memory(mem_address);
     if(mem_index<0) return -1;
-    int32_t value = load_memory(mem_index);
+    int32_t value = load_memory(mem_index, &indmem);
+    if(indmem>0) return -1;
     // flw
     if(instruction.funct3==0b010){
     }
@@ -22,10 +25,13 @@ signed char f_execute(struct instruction instruction){
   }
   // STORE-FP
   else if(instruction.opcode==0b0100111){
-    int32_t mem_address = load_regster(instruction.rs1_index)+instruction.imm;
+    signed char indrs1 = 1, indrs2 = 1;
+    int32_t mem_address = load_register(instruction.rs1_index, &indrs1)+instruction.imm;
+    if(indrs1>0) return -1;
     int mem_index = index_memory(mem_address);
     if(mem_index<0) return -1;
-    int32_t value = f_load_regster(instruction.rs2_index);
+    int32_t value = f_load_register(instruction.rs2_index, &indrs2);
+    if(indrs2>0) return -1;
     // fsw
     if(instruction.funct3==0b010){
     }
@@ -37,51 +43,67 @@ signed char f_execute(struct instruction instruction){
     // fadd.s
     if(instruction.funct7==0b0000000){
       if(instruction.funct3==rm){
-        int32_t rs1 = f_load_regster(instruction.rs1_index);
-        int32_t rs2 = f_load_regster(instruction.rs2_index);
+        signed char indrs1 = 1, indrs2 = 1;
+        int32_t rs1 = f_load_register(instruction.rs1_index, &indrs1);
+        int32_t rs2 = f_load_register(instruction.rs2_index, &indrs2);
+        if(indrs1>0||indrs2>0) return -1;
         int32_t value = fadd_s_wrap(rs1, rs2);
         f_store_register(instruction.rd_index, value);
       }
+      else return -1;
     }
     // fsub.s
     else if(instruction.funct7==0b0000100){
       if(instruction.funct3==rm){
-        int32_t rs1 = f_load_regster(instruction.rs1_index);
-        int32_t rs2 = f_load_regster(instruction.rs2_index);
+        signed char indrs1 = 1, indrs2 = 1;
+        int32_t rs1 = f_load_register(instruction.rs1_index, &indrs1);
+        int32_t rs2 = f_load_register(instruction.rs2_index, &indrs2);
+        if(indrs1>0||indrs2>0) return -1;
         int32_t value = fsub_s_wrap(rs1, rs2);
         f_store_register(instruction.rd_index, value);
       }
+      else return -1;
     }
     // fmul.s
     else if(instruction.funct7==0b0001000){
       if(instruction.funct3==rm){
-        int32_t rs1 = f_load_regster(instruction.rs1_index);
-        int32_t rs2 = f_load_regster(instruction.rs2_index);
+        signed char indrs1 = 1, indrs2 = 1;
+        int32_t rs1 = f_load_register(instruction.rs1_index, &indrs1);
+        int32_t rs2 = f_load_register(instruction.rs2_index, &indrs2);
+        if(indrs1>0||indrs2>0) return -1;
         int32_t value = fmul_s_wrap(rs1, rs2);
         f_store_register(instruction.rd_index, value);
       }
+      else return -1;
     }
     // fdiv.s
     else if(instruction.funct7==0b0001100){
       if(instruction.funct3==rm){
-        int32_t rs1 = f_load_regster(instruction.rs1_index);
-        int32_t rs2 = f_load_regster(instruction.rs2_index);
+        signed char indrs1 = 1, indrs2 = 1;
+        int32_t rs1 = f_load_register(instruction.rs1_index, &indrs1);
+        int32_t rs2 = f_load_register(instruction.rs2_index, &indrs2);
+        if(indrs1>0||indrs2>0) return -1;
         int32_t value = fdiv_s_wrap(rs1, rs2);
         f_store_register(instruction.rd_index, value);
       }
+      else return -1;
     }
     // fsqrt.s
     else if(instruction.funct7==0b0101100){
       if(instruction.funct3==rm&&instruction.rs2_index==0b00000){
-        int32_t rs1 = f_load_regster(instruction.rs1_index);
+        signed char indrs1 = 1;
+        int32_t rs1 = f_load_register(instruction.rs1_index, &indrs1);
+        if(indrs1>0) return -1;
         int32_t value = fsqrt_s_wrap(rs1);
         f_store_register(instruction.rd_index, value);
       }
       else return -1;
     }
     else if(instruction.funct7==0b0010000){
-      int32_t rs1 = f_load_regster(instruction.rs1_index);
-      int32_t rs2 = f_load_regster(instruction.rs2_index);
+      signed char indrs1 = 1, indrs2 = 1;
+      int32_t rs1 = f_load_register(instruction.rs1_index, &indrs1);
+      int32_t rs2 = f_load_register(instruction.rs2_index, &indrs2);
+      if(indrs1>0||indrs2>0) return -1;
       // fsgnj.s
       if(instruction.funct3==0b000){
         int32_t int1 = rs1&0x7fffffff;
@@ -108,7 +130,9 @@ signed char f_execute(struct instruction instruction){
     // fcvt.s.w
     else if(instruction.funct7==0b1101000){
       if(instruction.funct3==rm&&instruction.rs2_index==0b00000){
-        int32_t rs1 = load_regster(instruction.rs1_index);
+        signed char indrs1 = 1;
+        int32_t rs1 = load_register(instruction.rs1_index, &indrs1);
+        if(indrs1>0) return -1;
         int32_t value = fcvt_s_w_wrap(rs1);
         f_store_register(instruction.rd_index, value);
       }
@@ -117,7 +141,9 @@ signed char f_execute(struct instruction instruction){
     // fmv.s.w
     else if(instruction.funct7==0b1111000){
       if(instruction.funct3==0b000&&instruction.rs2_index==0b00000){
-        int32_t rs1 = load_regster(instruction.rs1_index);
+        signed char indrs1 = 1;
+        int32_t rs1 = load_register(instruction.rs1_index, &indrs1);
+        if(indrs1>0) return -1;
         f_store_register(instruction.rd_index, rs1);
       }
       else return -1;
@@ -125,15 +151,19 @@ signed char f_execute(struct instruction instruction){
     // fmv.w.s
     else if(instruction.funct7==0b1110000){
       if(instruction.funct3==0b000&&instruction.rs2_index==0b00000){
-        int32_t rs1 = f_load_regster(instruction.rs1_index);
+        signed char indrs1 = 1;
+        int32_t rs1 = f_load_register(instruction.rs1_index, &indrs1);
+        if(indrs1>0) return -1;
         store_register(instruction.rd_index, rs1);
       }
       else return -1;
     }
     else if(instruction.funct7==0b1010000){
+      signed char indrs1 = 1, indrs2 = 1;
+      int32_t rs1 = f_load_register(instruction.rs1_index, &indrs1);
+      int32_t rs2 = f_load_register(instruction.rs2_index, &indrs2);
+      if(indrs1>0||indrs2>0) return -1;
       int32_t value = 0;
-      int32_t rs1 = f_load_regster(instruction.rs1_index);
-      int32_t rs2 = f_load_regster(instruction.rs2_index);
       // feq.s
       if(instruction.funct3==0b010){
         int32_t abs1 = rs1 & 0x7fffffff;
@@ -164,10 +194,13 @@ signed char execute(struct instruction instruction){
   }
   // LOAD
   else if(instruction.opcode==0b0000011){
-    int32_t mem_address = load_regster(instruction.rs1_index)+instruction.imm;
+    signed char indrs1 = 1, indmem = 1;
+    int32_t mem_address = load_register(instruction.rs1_index, &indrs1)+instruction.imm;
+    if(indrs1>0) return -1;
     int mem_index = index_memory(mem_address);
     if(mem_index<0) return -1;
-    int32_t value = load_memory(mem_index);
+    int32_t value = load_memory(mem_index, &indmem);
+    if(indmem>0) return -1;
     // lw
     if(instruction.funct3==0b010){
     }
@@ -177,10 +210,13 @@ signed char execute(struct instruction instruction){
   }
   // STORE
   else if(instruction.opcode==0b0100011){
-    int32_t mem_address = load_regster(instruction.rs1_index)+instruction.imm;
+    signed char indrs1 = 1, indrs2 = 1;
+    int32_t mem_address = load_register(instruction.rs1_index, &indrs1)+instruction.imm;
+    if(indrs1>0) return -1;
     int mem_index = index_memory(mem_address);
     if(mem_index<0) return -1;
-    int32_t value = load_regster(instruction.rs2_index);
+    int32_t value = load_register(instruction.rs2_index, &indrs2);
+    if(indrs2>0) return -1;
     // sw
     if(instruction.funct3==0b010){
     }
@@ -190,9 +226,11 @@ signed char execute(struct instruction instruction){
   }
   // OP
   else if(instruction.opcode==0b0110011){
+    signed char indrs1 = 1, indrs2 = 1;
+    int32_t rs1 = load_register(instruction.rs1_index, &indrs1);
+    int32_t rs2 = load_register(instruction.rs2_index, &indrs2);
+    if(indrs1>0||indrs2>0) return -1;
     int32_t value = 0;
-    int32_t rs1 = load_regster(instruction.rs1_index);
-    int32_t rs2 = load_regster(instruction.rs2_index);
     // sll
     if(instruction.funct3==0b001){
       rs2 = rs2&31;
@@ -248,8 +286,10 @@ signed char execute(struct instruction instruction){
   }
   // OP-IMM
   else if(instruction.opcode==0b0010011){
+    signed char indrs1 = 1;
+    int32_t rs1 = load_register(instruction.rs1_index, &indrs1);
+    if(indrs1>0) return -1;
     int32_t value = 0;
-    int32_t rs1 = load_regster(instruction.rs1_index);
     // slli
     if(instruction.funct3==0b001){
       value = rs1<<instruction.imm;
@@ -295,9 +335,11 @@ signed char execute(struct instruction instruction){
   }
   // BRANCH
   else if(instruction.opcode==0b1100011){
+    signed char indrs1 = 1, indrs2 = 1;
+    int32_t rs1 = load_register(instruction.rs1_index, &indrs1);
+    int32_t rs2 = load_register(instruction.rs2_index, &indrs2);
+    if(indrs1>0||indrs2>0) return -1;
     int32_t offset = 4;
-    int32_t rs1 = load_regster(instruction.rs1_index);
-    int32_t rs2 = load_regster(instruction.rs2_index);
     // beq
     if(instruction.funct3==0b000){
       if(rs1==rs2) offset = instruction.imm;
@@ -345,14 +387,19 @@ signed char execute(struct instruction instruction){
   // jalr
   else if(instruction.opcode==0b1100111){
     if(instruction.funct3==0b000){
+      signed char indrs1 = 1;
+      int32_t rd = load_register(instruction.rs1_index, &indrs1);
+      if(indrs1>0) return -1;
       store_register(instruction.rd_index, pc+4);
-      pc = load_regster(instruction.rs1_index)+instruction.imm;
+      pc = rd+instruction.imm;
     }
     else return -1;
   }
   else if(instruction.opcode==0b1011011){
+    signed char indrs1 = 1;
+    int32_t rs1 = load_register(instruction.rs1_index, &indrs1);
+    if(indrs1>0) return -1;
     int32_t value = 0;
-    int32_t rs1 = load_regster(instruction.rs1_index);
     uint32_t urs1 = (uint32_t)rs1;
     if(instruction.funct7==0b0000000&&instruction.rs2_index==0b00000){
       // mul10
@@ -379,7 +426,9 @@ signed char execute(struct instruction instruction){
   }
   // txbu
   else if(instruction.opcode==0b0011011){
-    uart = load_regster(instruction.rs1_index)&0x000000ff;
+    signed char indrs1 = 1;
+    uart = load_register(instruction.rs1_index, &indrs1)&0x000000ff;
+    if(indrs1>0) return -1;
     pc = pc+4;
   }
   else{

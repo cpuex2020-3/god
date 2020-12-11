@@ -2,15 +2,20 @@
 #include <stdlib.h>
 #include "instruction.h"
 
+typedef struct int32_or_indeterminate {
+  int32_t value;
+  signed char indeterminate;
+} int32_ind;
+
 int32_t pc = 0;
 int32_t uart = 0;
 
-int32_t registers[32] = {0};
+int32_ind registers[32] = { {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1} };
 char *abi_names[36] = {"zero","ra","sp","gp","tp","t0/hp","t1","t2","s0/fp","s1","a0","a1","a2","a3","a4","a5","a6","a7","s2","s3","s4","s5","s6","s7","s8","s9","s10","s11","t3","t4","t5","t6","t0","hp","s0","fp"};
 
 int size_memory = 0; // 各領域のword数 = 配列のサイズ。
 struct instruction *text_memory = NULL;  // text領域, 実行時はread only。
-int32_t *rest_memory[3] = {NULL};  // {data,heap,stack} のイメージ。
+int32_ind *rest_memory[3] = { NULL };  // {data,heap,stack} のイメージ。
 
 void show_registers(){
   for (size_t i=0; i<32; i++){
@@ -18,7 +23,8 @@ void show_registers(){
     if(i==0) printf(" ");
     else if(i==26||i==27) printf("  ");
     else if(i!=5&&i!=8) printf("   ");
-    printf(" : %d\n",registers[i]);
+    if(registers[i].indeterminate==1) printf(" : XXXX\n");
+    else printf(" : %d\n", registers[i].value);
   }
   return;
 }
@@ -30,16 +36,23 @@ signed char init_data(int32_t size){
     return -1;
   }
   for (size_t i=0; i<3; i++){
-    rest_memory[i] = (int32_t *)malloc(sizeof(int32_t)*size);
+    rest_memory[i] = (int32_ind *)malloc(sizeof(int32_ind)*size);
   }
   for (size_t i=0; i<3; i++){
     if(rest_memory[i]==NULL){
       return -1;
     }
   }
-  registers[3] = (size_memory*0)*4; // gp = data領域の先頭。本来は真ん中。
-  registers[5] = (size_memory*1)*4; // hp = heap領域の先頭。
-  registers[2] = (size_memory*2)*4; // sp = stack領域の先頭。本来は末尾。
+  registers[0].value = 0;
+  registers[1].value = 0;
+  registers[3].value = (size_memory*0)*4; // gp = data領域の先頭。本来は真ん中。
+  registers[5].value = (size_memory*1)*4; // hp = heap領域の先頭。
+  registers[2].value = (size_memory*2)*4; // sp = stack領域の先頭。本来は末尾。
+  registers[0].indeterminate = 0;
+  registers[1].indeterminate = 0;
+  registers[3].indeterminate = 0;
+  registers[5].indeterminate = 0;
+  registers[2].indeterminate = 0;
   return 0;
 }
 
@@ -80,12 +93,16 @@ char *reverse_register(int index){
   }
 }
 
-int32_t load_regster(int index){
-  return registers[index];
+int32_t load_register(int index, signed char *indeterminate){
+  *indeterminate = registers[index].indeterminate;
+  return registers[index].value;
 }
 
 void store_register(int index, int32_t value){
-  if(index!=0) registers[index] = value;
+  if(index!=0){
+    registers[index].value = value;
+    registers[index].indeterminate = 0;
+  }
   return;
 }
 
@@ -112,11 +129,12 @@ int index_memory(int32_t address){
   return address/4;
 };
 
-int32_t load_memory(int index){
+int32_t load_memory(int index, signed char *indeterminate){
   int32_t value = 0;
   for (size_t i=0; i<3; i++){
     if(index<size_memory*(i+1)){
-      value = rest_memory[i][index-size_memory*i];
+      value = rest_memory[i][index-size_memory*i].value;
+      *indeterminate = rest_memory[i][index-size_memory*i].indeterminate;
       break;
     }
   }
@@ -126,7 +144,8 @@ int32_t load_memory(int index){
 void store_memory(int index, int32_t value){
   for (size_t i=0; i<3; i++){
     if(index<size_memory*(i+1)){
-      rest_memory[i][index-size_memory*i] = value;
+      rest_memory[i][index-size_memory*i].value = value;
+      rest_memory[i][index-size_memory*i].indeterminate = 0;
       break;
     }
   }
@@ -138,7 +157,7 @@ void store_memory(int index, int32_t value){
 const int32_t rm = 0b000;
 int32_t fcsr = 0x00000000|(rm<<5);
 
-int32_t f_registers[32] = { 0 };
+int32_ind f_registers[32] = { {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1} };
 char *f_abi_names[32] = {"ft0","ft1","ft2","ft3","ft4","ft5","ft6","ft7","fs0","fs1","fa0","fa1","fa2","fa3","fa4","fa5","fa6","fa7","fs2","fs3","fs4","fs5","fs6","fs7","fs8","fs9","fs10","fs11","ft8","ft9","ft10","ft11"};
 
 void f_show_registers(){
@@ -147,7 +166,8 @@ void f_show_registers(){
     if(i!=26&&i!=27&&i!=30&&i!=31){
       printf(" ");
     }
-    printf(" : %f (0x%08x)\n", *((float *)(f_registers+i)), f_registers[i]);
+    if(f_registers[i].indeterminate==1) printf("XXXX\n");
+    else printf(" : %f (0x%08x)\n", *((float *)(&(f_registers[i].value))), f_registers[i].value);
   }
   return;
 }
@@ -165,11 +185,13 @@ char *f_reverse_register(int index){
   return f_abi_names[index];
 }
 
-int32_t f_load_regster(int index){
-  return f_registers[index];
+int32_t f_load_register(int index, signed char *indeterminate){
+  *indeterminate = f_registers[index].indeterminate;
+  return f_registers[index].value;
 }
 
 void f_store_register(int index, int32_t value){
-  f_registers[index] = value;
+  f_registers[index].value = value;
+  f_registers[index].indeterminate = 0;
   return;
 }

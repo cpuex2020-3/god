@@ -13,13 +13,13 @@ void free_memory();  // mallocしたmemoryの解放。
 // name/addressをindex_uoに渡す。例外処理をしなさーい。 -> indexをload_uo,store_uoに渡す。
 int index_register(char *name);  // abi_nameからindexに変換。ただし存在しないregisterを指している場合は -1。
 char *reverse_register(int index);
-int32_t load_regster(int index);
+int32_t load_register(int index, signed char *indeterminate);
 void store_register(int index, int32_t value);
 int index_text(int32_t program_counter);  // pcからindexに変換。text領域外参照や4 alignmentされていないを場合は -1。
 struct instruction load_text(int index);
 void store_text(int index, struct instruction instruction);
 int index_memory(int32_t address);  // addressからindexに変換。範囲外参照や4 alignmentされていないを場合は -1。
-int32_t load_memory(int index);
+int32_t load_memory(int index, signed char *indeterminate);
 void store_memory(int index, int32_t value);
 
 // ここから浮動小数点数。
@@ -32,7 +32,7 @@ int32_t fcsr;
 void f_show_registers();
 int f_index_register(char *name);
 char *f_reverse_register(int index);
-int32_t f_load_regster(int index);
+int32_t f_load_register(int index, signed char *indeterminate);
 void f_store_register(int index, int32_t value);
 
 #endif

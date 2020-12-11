@@ -168,11 +168,13 @@ signed char assemble(char *output_file){
   return 0;
 }
 
-signed char data_assemble(char *output_file, int size){
+signed char data_assemble(char *output_file){
   fp = fopen(output_file, "w");
   if(fp==NULL) return -1;
-  for(int i = 0 ; i<size; i++){
-    int32_t data = load_memory(i);
+  for(int i = 0 ; ; i++){
+    signed char ind_data;
+    int32_t data = load_memory(i, &ind_data);
+    if(ind_data>0) break;
     print_uo(data, 32);
   }
   fclose(fp);

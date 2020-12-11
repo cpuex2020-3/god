@@ -8,15 +8,18 @@ int32_t text_address = 0;
 int32_t data_address = 0;
 struct label_list *labels = NULL;
 
-void init_parser(char *file_name){
+signed char init_parser(char *file_name){
   struct instruction halt;
   halt.opcode = 0b0000000;
   /* pcとraの初期値は0です。*/
-  store_text(index_register("ra"), halt);
+  signed char indra = 1, indgp = 1;
+  store_text(load_register(index_register("ra"), &indra), halt);
+  if(indra>0) return -1;
   text_address = pc+4;
-  data_address = load_regster(index_register("gp"));
+  data_address = load_register(index_register("gp"), &indgp);
+  if(indgp>0) return -1;
   labels = get_text_labels(file_name);
-  return;
+  return 0;
 }
 
 char s[256];
@@ -1506,7 +1509,7 @@ signed char instruction(char t[256]){
 
 signed char parse(char *file_name){
 
-  init_parser(file_name);
+  if(init_parser(file_name)<0) return -1;
 
   char *name[2] = {"external.s", file_name};
   FILE *fp;
