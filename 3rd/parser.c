@@ -186,7 +186,7 @@ signed char directive(char t[256]){
       int j = index_memory(data_address);
       int32_t k = hex_immediate(imm);
       if(j<0||(eqlstr(imm,"0xffffffff")!=0&&k==-1)) return -1;
-      store_memory(j, k);
+      store_memory(j, k, 0);
       data_address = data_address+4;
       i = operand(&imm);
     }
@@ -194,7 +194,7 @@ signed char directive(char t[256]){
     int j = index_memory(data_address);
     int32_t k = hex_immediate(imm);
     if(j<0||(eqlstr(imm,"0xffffffff")!=0&&k==-1)) return -1;
-    store_memory(j, k);
+    store_memory(j, k, 0);
     data_address = data_address+4;
   }
   return 0;
