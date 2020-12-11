@@ -1582,6 +1582,7 @@ signed char parse(char *file_name){
     delete_list(labels);
     return -1;
   }
+  store_text(i, halt);
 
   /* min_caml_startから実行を始めます。 */
   int32_t main = search_list(labels,"min_caml_start");

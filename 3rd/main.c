@@ -19,6 +19,7 @@ int main(int argc, char *argv[]){
     free_memory();
     return 0;
   }
+  printf("parse complete\n");
 
   if(argc==2){
     if(matomete()<0){
@@ -59,7 +60,9 @@ int main(int argc, char *argv[]){
           free_memory();
           return 0;
         }
+        printf("reverse assembled\n");
         printf("min_caml_start index   : %d\n", pc/4);
+        output = output+1;
       }
       else if(op!=0&&argv[2][op]=='s'){
         char c = '\n';
