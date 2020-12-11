@@ -72,17 +72,6 @@ min_caml_print_int_hex:
 
 .globl min_caml_print_int
 min_caml_print_int:
-  sw a0, 4(s0)
-  sw s2, 8(s0)
-  sw s3, 12(s0)
-  sw s4, 16(s0)
-  sw s5, 20(s0)
-  sw s6, 24(s0)
-  sw s7, 28(s0)
-  sw s8, 32(s0)
-  sw s9, 36(s0)
-  sw s10, 40(s0)
-  sw s11, 44(s0)
   #negative
   bge  a0, zero, 48
   addi t1, zero, 45
@@ -144,17 +133,6 @@ min_caml_print_int:
   txbu  s3
   addi  s2, s2, 48
   txbu  s2
-  lw a0, 4(s0)
-  lw s2, 8(s0)
-  lw s3, 12(s0)
-  lw s4, 16(s0)
-  lw s5, 20(s0)
-  lw s6, 24(s0)
-  lw s7, 28(s0)
-  lw s8, 32(s0)
-  lw s9, 36(s0)
-  lw s10, 40(s0)
-  lw s11, 44(s0)
   ret
 
 # itof and ftoi
