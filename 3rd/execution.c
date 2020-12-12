@@ -446,7 +446,11 @@ signed char matomete(){
     uart = 0;
     if(i<0) return -1;
     struct instruction instruction = load_text(i);
-    if(execute(instruction)<0) return -1;
+    if(execute(instruction)<0) {
+      assembly(instruction, stdout);
+      show_registers();
+      return -1;
+    }
     if(instruction.opcode==0b0000000){
       break;
     }
