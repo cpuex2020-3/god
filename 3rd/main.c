@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "data.h"
 #include "parser.h"
+#include "statistics.h"
 #include "execution.h"
 #include "assembler.h"
 #include "assembly.h"
@@ -22,10 +23,20 @@ int main(int argc, char *argv[]){
   printf("parse complete\n");
 
   if(argc==2){
-    if(matomete()<0){
+    if(matomete(0)<0){
       printf("execution error\n");
       free_memory();
       return 0;
+    }
+  }
+  else if(argc==3){
+    if(matomete(1)<0){
+      printf("execution error\n");
+      free_memory();
+      return 0;
+    }
+    if(show_statistics(argv[2])<0){
+      printf("failure in writing statistics data out\n");
     }
   }
   else{

@@ -1,5 +1,5 @@
 
-ALL_O = main.o instruction.o data.o fpu_wrap.o labels.o parser.o execution.o assembler.o assembly.o
+ALL_O = main.o instruction.o data.o labels.o parser.o fpu_wrap.o statistics.o execution.o assembler.o assembly.o
 
 god_float: $(ALL_O)
 	gcc -Wall -o god_float $(wildcard fpu/*.o) $(ALL_O) -lm
@@ -10,13 +10,15 @@ instruction.o: instruction.c
 	gcc -Wall -c instruction.c
 data.o: data.c
 	gcc -Wall -c data.c
-fpu_wrap.o: fpu_wrap.c
-	cd fpu; make
-	gcc -Wall -c fpu_wrap.c
 labels.o: labels.c
 	gcc -Wall -c labels.c
 parser.o: parser.c
 	gcc -Wall -c parser.c
+fpu_wrap.o: fpu_wrap.c
+	cd fpu; make
+	gcc -Wall -c fpu_wrap.c
+statistics.o: statistics.c
+	gcc -Wall -c statistics.c
 execution.o: execution.c
 	gcc -Wall -c execution.c
 assembler.o: assembler.c

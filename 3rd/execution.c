@@ -4,6 +4,7 @@
 #include "instruction.h"
 #include "data.h"
 #include "fpu_wrap.h"
+#include "statistics.h"
 #include "assembly.h"
 
 /* execute のなかから使う。長くなるから分離しただけ。*/
@@ -439,17 +440,21 @@ signed char step(){
   return 0;
 }
 
-signed char matomete(){
-  unsigned long long counter = 1;
-  for(int i = index_text(pc); ; uart = 0, i = index_text(pc), counter++){
+signed char matomete(signed char stat_switch){
+  for(int i = index_text(pc); ; uart = 0, i = index_text(pc)){
     // printf("%d\n", i);
-    uart = 0;
     if(i<0) return -1;
     struct instruction instruction = load_text(i);
     if(execute(instruction)<0) {
       assembly(instruction, stdout);
       show_registers();
       return -1;
+    }
+    count_exec();
+    if(stat_switch>0){
+      if(get_stat(instruction)<0){
+        return -1;
+      }
     }
     if(instruction.opcode==0b0000000){
       break;
@@ -458,6 +463,6 @@ signed char matomete(){
       printf("%c", uart);
     }
   }
-  printf("execution : %llu times\n", counter);
+  if(stat_switch==0) print_count(stdout);
   return 0;
 }
