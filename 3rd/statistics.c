@@ -20,7 +20,7 @@ void count_exec(){
 };
 
 void print_count(FILE *fp){
-  fprintf(fp, "\nexecution : %llu times\n", counter);
+  fprintf(fp, "\nexecutions : %llu times\n", counter);
   return ;
 };
 
@@ -232,7 +232,7 @@ signed char get_stat(struct instruction instruction){
       stat_reg_rd[32+instruction.rd_index] = stat_reg_rd[32+instruction.rd_index] + 1;
       stat_reg_rs[instruction.rs1_index] = stat_reg_rs[instruction.rs1_index] + 1;
     }
-    return -1;
+    else return -1;
   }
   // STORE-FP
   else if(instruction.opcode==0b0100111){
@@ -242,7 +242,7 @@ signed char get_stat(struct instruction instruction){
       stat_reg_rs[instruction.rs1_index] = stat_reg_rs[instruction.rs1_index] + 1;
       stat_reg_rs[32+instruction.rs2_index] = stat_reg_rs[32+instruction.rs2_index] + 1;
     }
-    return -1;
+    else return -1;
   }
   // OP-FP
   else if(instruction.opcode==0b1010011){
