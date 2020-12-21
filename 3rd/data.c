@@ -26,7 +26,7 @@ void show_registers(){
     if(registers[i].indeterminate==1) printf(" : XXXX\n");
     else printf(" : %d\n", registers[i].value);
   }
-  return;
+  return ;
 }
 
 signed char init_data(int32_t size){
@@ -64,7 +64,7 @@ void free_memory(){
   for (size_t i=0; i<3; i++){
     free(rest_memory[i]);
   }
-  return;
+  return ;
 }
 
 int index_register(char *name){
@@ -106,7 +106,7 @@ void store_register(int index, int32_t value, signed char indeterminate){
     registers[index].value = value;
     registers[index].indeterminate = indeterminate;
   }
-  return;
+  return ;
 }
 
 int index_text(int32_t program_counter){
@@ -122,7 +122,7 @@ struct instruction load_text(int index){
 
 void store_text(int index, struct instruction instruction){
   text_memory[index] = instruction;
-  return;
+  return ;
 }
 
 int index_memory(int32_t address){
@@ -152,7 +152,7 @@ void store_memory(int index, int32_t value, signed char indeterminate){
       break;
     }
   }
-  return;
+  return ;
 }
 
 // ここから浮動小数点数。
@@ -160,7 +160,7 @@ void store_memory(int index, int32_t value, signed char indeterminate){
 const int32_t rm = 0b000;
 int32_t fcsr = 0x00000000|(rm<<5);
 
-int32_ind f_registers[32] = { {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1} };
+int32_ind f_registers[32] = { {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,0}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1}, {0,1} };
 char *f_abi_names[32] = {"ft0","ft1","ft2","ft3","ft4","ft5","ft6","ft7","fs0","fs1","fa0","fa1","fa2","fa3","fa4","fa5","fa6","fa7","fs2","fs3","fs4","fs5","fs6","fs7","fs8","fs9","fs10","fs11","ft8","ft9","ft10","ft11"};
 
 void f_show_registers(){
@@ -172,7 +172,7 @@ void f_show_registers(){
     if(f_registers[i].indeterminate==1) printf("XXXX\n");
     else printf(" : %f (0x%08x)\n", *((float *)(&(f_registers[i].value))), f_registers[i].value);
   }
-  return;
+  return ;
 }
 
 int f_index_register(char *name){
@@ -194,7 +194,9 @@ int32_t f_load_register(int index, signed char *indeterminate){
 }
 
 void f_store_register(int index, int32_t value, signed char indeterminate){
-  f_registers[index].value = value;
-  f_registers[index].indeterminate = indeterminate;
-  return;
+  if(index!=18){
+    f_registers[index].value = value;
+    f_registers[index].indeterminate = indeterminate;
+  }
+  return ;
 }

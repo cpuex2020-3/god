@@ -29,7 +29,7 @@ int main(int argc, char *argv[]){
       return 0;
     }
   }
-  else if(argc==3){
+  else if(argc==3&&argv[2][0]!='-'){
     if(matomete(1)<0){
       printf("execution error\n");
       free_memory();

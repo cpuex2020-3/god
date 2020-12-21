@@ -177,7 +177,7 @@ signed char f_execute(struct instruction instruction){
 
 signed char execute(struct instruction instruction){
   if(instruction.opcode==0b0000000){
-    printf("\nhalt\n");
+    // printf("\nhalt\n");
     pc = pc+0;
   }
   // LOAD
