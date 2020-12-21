@@ -494,18 +494,3 @@ min_caml_fhalf:
   fmv.s.w ft0, t2
 	fmul.s	fa0, fa0, ft0
 	ret
-
-	.globl min_caml_fiszero
-min_caml_fiszero:
-	feq.s	a0, fa0, fs2
-	ret
-
-	.globl min_caml_fispos
-min_caml_fispos:
-	flt.s	a0, fs2, fa0
-	ret
-
-	.globl min_caml_fisneg
-min_caml_fisneg:
-	flt.s	a0, fa0, fs2
-	ret
