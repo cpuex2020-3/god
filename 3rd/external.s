@@ -462,6 +462,7 @@ l.ten:	# 10.0
 	.word	0x41200000
 l.point5:	# 0.5
 	.word	0x3f000000
+
 	.text
 	.globl min_caml_create_array
 min_caml_create_array:
@@ -506,21 +507,15 @@ min_caml_fhalf:
 
 	.globl min_caml_fiszero
 min_caml_fiszero:
-	la	t2, l.zero
-	flw	ft0, 0(t2)
-	feq.s	a0, fa0, ft0
+	feq.s	a0, fa0, fs2
 	ret
 
 	.globl min_caml_fispos
 min_caml_fispos:
-	la	t2, l.zero
-	flw	ft0, 0(t2)
-	flt.s	a0, ft0, fa0
+	flt.s	a0, fs2, fa0
 	ret
 
 	.globl min_caml_fisneg
 min_caml_fisneg:
-	la	t2, l.zero
-	flw	ft0, 0(t2)
-	flt.s	a0, fa0, ft0
+	flt.s	a0, fa0, fs2
 	ret
