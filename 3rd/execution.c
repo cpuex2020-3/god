@@ -446,13 +446,14 @@ signed char matomete(signed char stat_switch){
     if(i<0) return -1;
     struct instruction instruction = load_text(i);
     if(execute(instruction)<0) {
-      assembly(instruction, stdout);
+      assembly(instruction, stderr);
       show_registers();
       return -1;
     }
     count_exec();
     if(stat_switch>0){
       if(get_stat(instruction)<0){
+        assembly(instruction, stderr);
         return -1;
       }
     }
