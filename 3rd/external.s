@@ -453,16 +453,6 @@ atan_else.2:
 	ret
 
 # lib.s
-	.data
-l.one:	# 1.000000
-	.word	0x3f800000
-l.zero:	# 0.0
-	.word	0x00000000
-l.ten:	# 10.0
-	.word	0x41200000
-l.point5:	# 0.5
-	.word	0x3f000000
-
 	.text
 	.globl min_caml_create_array
 min_caml_create_array:
@@ -500,8 +490,8 @@ create_float_array_cont:
 
 	.globl min_caml_fhalf
 min_caml_fhalf:
-	la	t2, l.point5
-	flw	ft0, 0(t2)
+  lui t2, 258048
+  fmv.s.w ft0, t2
 	fmul.s	fa0, fa0, ft0
 	ret
 
