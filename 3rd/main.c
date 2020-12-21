@@ -20,7 +20,7 @@ int main(int argc, char *argv[]){
     free_memory();
     return 0;
   }
-  printf("parse complete\n");
+  fprintf(stderr, "parse complete\n");
 
   if(argc==2){
     if(matomete(0)<0){

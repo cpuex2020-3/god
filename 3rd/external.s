@@ -135,12 +135,7 @@ min_caml_print_int:
   txbu  s2
   ret
 
-# itof and ftoi
-
-.globl min_caml_float_of_int
-min_caml_float_of_int:
-	fcvt.s.w	fa0, a0
-	ret
+# ftoi
 
 .globl min_caml_int_of_float
 min_caml_int_of_float:
@@ -502,22 +497,6 @@ create_float_array_cont:
 	fsw	fa0, 0(t6)
 	j	create_float_array_loop
 
-	.globl min_caml_fsqr
-min_caml_fsqr:
-	fmul.s	fa0, fa0, fa0
-	ret
-	.globl min_caml_sqrt
-min_caml_sqrt:
-	fsqrt.s	fa0, fa0
-	ret
-	.globl min_caml_fabs
-min_caml_fabs:
-	fsgnjx.s	fa0, fa0, fa0
-	ret
-	.globl min_caml_fless
-min_caml_fless:
-	flt.s	a0, fa0, fa1
-	ret
 	.globl min_caml_fhalf
 min_caml_fhalf:
 	la	t2, l.point5
@@ -544,9 +523,4 @@ min_caml_fisneg:
 	la	t2, l.zero
 	flw	ft0, 0(t2)
 	flt.s	a0, fa0, ft0
-	ret
-
-	.globl min_caml_fneg
-min_caml_fneg:
-	fsgnjn.s	fa0, fa0, fa0
 	ret

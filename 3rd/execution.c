@@ -463,6 +463,6 @@ signed char matomete(signed char stat_switch){
       printf("%c", uart);
     }
   }
-  if(stat_switch==0) print_count(stdout);
+  if(stat_switch==0) print_count(stderr);
   return 0;
 }
