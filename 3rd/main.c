@@ -11,12 +11,12 @@
 
 int main(int argc, char *argv[]){
   if(init_data(size_memory)<0){
-    printf("memory allocation error\n");
+    fprintf(stderr, "memory allocation error\n");
     free_memory();
     return 0;
   }
   if(parse(argv[1])<0){
-    printf("parse error\n");
+    fprintf(stderr, "parse error\n");
     free_memory();
     return 0;
   }
@@ -24,19 +24,19 @@ int main(int argc, char *argv[]){
 
   if(argc==2){
     if(matomete(0)<0){
-      printf("execution error\n");
+      fprintf(stderr, "execution error\n");
       free_memory();
       return 0;
     }
   }
   else if(argc==3&&argv[2][0]!='-'){
     if(matomete(1)<0){
-      printf("execution error\n");
+      fprintf(stderr, "execution error\n");
       free_memory();
       return 0;
     }
     if(show_statistics(argv[2])<0){
-      printf("failure in writing statistics data out\n");
+      fprintf(stderr, "failure in writing statistics data out\n");
     }
   }
   else{
@@ -47,32 +47,32 @@ int main(int argc, char *argv[]){
       }
       else if(op!=0&&argv[2][op]=='b'&&output<argc){
         if(assemble(argv[output])<0){
-          printf("text assemble error\n");
+          fprintf(stderr, "text assemble error\n");
           free_memory();
           return 0;
         }
-        printf("text assembled\n");
-        printf("min_caml_start address : %d\n", pc);
+        fprintf(stderr, "text assembled\n");
+        fprintf(stderr, "min_caml_start address : %d\n", pc);
         output = output+1;
       }
       else if(op!=0&&argv[2][op]=='d'&&output<argc){
         if(data_assemble(argv[output])<0){
-          printf("data assemble error\n");
+          fprintf(stderr, "data assemble error\n");
           free_memory();
           return 0;
         }
-        printf("data assembled\n");
-        printf("sorry for big-endian\n");
+        fprintf(stderr, "data assembled\n");
+        fprintf(stderr, "sorry for big-endian\n");
         output = output+1;
       }
       else if(op!=0&&argv[2][op]=='a'&&output<argc){
         if(post_parser(argv[output])<0){
-          printf("assembly error\n");
+          fprintf(stderr, "assembly error\n");
           free_memory();
           return 0;
         }
-        printf("reverse assembled\n");
-        printf("min_caml_start index   : %d\n", pc/4);
+        fprintf(stderr, "reverse assembled\n");
+        fprintf(stderr, "min_caml_start index   : %d\n", pc/4);
         output = output+1;
       }
       else if(op!=0&&argv[2][op]=='s'){
@@ -80,7 +80,7 @@ int main(int argc, char *argv[]){
         while(c=='\n'){
           c = getchar();
           if(step()<0){
-            printf("execution error\n");
+            fprintf(stderr, "execution error\n");
             free_memory();
             return 0;
           }

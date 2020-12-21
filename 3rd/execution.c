@@ -177,7 +177,7 @@ signed char f_execute(struct instruction instruction){
 
 signed char execute(struct instruction instruction){
   if(instruction.opcode==0b0000000){
-    // printf("\nhalt\n");
+    // fprintf(stderr, "\nhalt\n");
     pc = pc+0;
   }
   // LOAD
@@ -401,7 +401,7 @@ signed char execute(struct instruction instruction){
   }
   // rxbu
   else if(instruction.opcode==0b0001011){
-    // printf("plz UART for rxbu : ");
+    // fprintf(stderr, "plz UART for rxbu : ");
     scanf("%d", &uart);
     if(uart<0||uart>=256) return -1;
     store_register(instruction.rd_index, uart, 0);
@@ -442,7 +442,7 @@ signed char step(){
 
 signed char matomete(signed char stat_switch){
   for(int i = index_text(pc); ; uart = 0, i = index_text(pc)){
-    // printf("%d\n", i);
+    // fprintf(stderr, "%d\n", i);
     if(i<0) return -1;
     struct instruction instruction = load_text(i);
     if(execute(instruction)<0) {
