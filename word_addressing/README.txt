@@ -1,11 +1,11 @@
 
-makeするとgod_byteという実行ファイルができます。使い方は次の通り。
+makeするとgod_wordという実行ファイルができます。使い方は次の通り。
 
-まとめて実行する場合：./god_byte input (output)
+まとめて実行する場合：./god_word input (output)
 txbuされた8bitはcharとしてprintfされます。またoutputがあればそこに実行に関する統計情報を出力します。
 統計を取る場合、その分だけ実行に時間がかかります。取らなければ今までとあまり変わらない時間で実行できると思います。
 
-それ以外の場合：./god_byte input (-option) (output) (output) (output)
+それ以外の場合：./god_word input (-option) (output) (output) (output)
 optionとして使えるのは「b」「d」「a」「s」の三つです。
 bを指定：outputに命令列のバイナリを吐きます。min_caml_startのアドレス(=PCの初期値)を標準出力に吐きます。
 dを指定：outputにdata領域の初期値のバイナリを吐きます。
@@ -33,14 +33,22 @@ sを指定：inputをステップ実行します。
 
 擬似命令の解決
 ・branch rs1, rs2, label_text
-	jal label_text に同じ。
+	labelが指す位置と現在読んでる命令が格納される予定の位置の差distanceを取得。
+	distanceがsigned12bitで収まるなら
+	branch rs1, rs2, distance。
+	収まらないならdistance-2に最も近い2^12の倍数をtwelveとして、
+	auipc  t1, (twelve>>12)
+	addi   t1, t1, ((distance-twelve)>>1)
+	addi   t1, t1, ((distance-twelve)>>1)
+	branch rs1, rs2, (distance-(((distance-twelve)>>1)*2))
+	に展開している。
 ・jal label_text
 	labelが指す位置と現在読んでる命令が格納される予定の位置の差distanceを取得。
-	distanceがsigned21bitで収まるなら
+	distanceがsigned20bitで収まるなら
 	jal ra, distance。
-	収まらないならdistance-4に最も近い2^12の倍数をtwelveとして、
+	収まらないならdistance-1に最も近い2^12の倍数をtwelveとして、
 	auipc t1, (twelve>>12)
-	jalr ra, t1, (distance-twelve)
+	jalr ra, t1, (distance-((twelve>>12)<<12))
 	に展開している。
 	本来なら収まらない場合はjal label_textではなくcall label_textの仕事らしい。
 ・j label_text
