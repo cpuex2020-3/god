@@ -1,11 +1,11 @@
 
-makeするとgod_floatという実行ファイルができます。使い方は次の通り。
+makeするとgod_byteという実行ファイルができます。使い方は次の通り。
 
-まとめて実行する場合：./god_float input (output)
+まとめて実行する場合：./god_byte input (output)
 txbuされた8bitはcharとしてprintfされます。またoutputがあればそこに実行に関する統計情報を出力します。
 統計を取る場合、その分だけ実行に時間がかかります。取らなければ今までとあまり変わらない時間で実行できると思います。
 
-それ以外の場合：./god_float input (-option) (output) (output) (output)
+それ以外の場合：./god_byte input (-option) (output) (output) (output)
 optionとして使えるのは「b」「d」「a」「s」の三つです。
 bを指定：outputに命令列のバイナリを吐きます。min_caml_startのアドレス(=PCの初期値)を標準出力に吐きます。
 dを指定：outputにdata領域の初期値のバイナリを吐きます。

@@ -200,6 +200,7 @@ min_caml_truncate:
 # written by Joe Hattori
 
 # tri.s
+
 	.data
 l.dpi:	# 6.28318548203
 	.word 0x40c90fdb
@@ -244,7 +245,7 @@ l.atan_cmp.1:	# 0.4375
 l.atan_cmp.2:	# 2.4375
 	.word	0x401c0000
 
-	.text
+.text
 reduction:
 	la	t6, l.dpi
 	flw	ft1, 0(t6)
@@ -310,7 +311,7 @@ kernel_cos:
 	fsgnj.s	fa0, fa0, ft4
 	ret
 
-	.globl min_caml_sin
+.globl min_caml_sin
 min_caml_sin:
 	fsgnj.s	ft4, fa0, fa0
 	fsgnjx.s	fa0, fa0, fa0
@@ -341,7 +342,7 @@ sin_else3:
 	fsub.s	fa0, ft1, fa0
 	j kernel_cos
 
-	.globl min_caml_cos
+.globl min_caml_cos
 min_caml_cos:
 	fsgnjx.s	fa0, fa0, fa0
 	fsgnj.s	ft4, fa0, fa0
@@ -408,7 +409,7 @@ kernel_atan:
 	fadd.s	fa0, fa0, ft2
 	ret
 
-	.globl min_caml_aton
+.globl min_caml_atan
 min_caml_atan:
 	fsgnj.s	ft4, fa0, fa0
 	fsgnjx.s	ft3, fa0, fa0
@@ -453,42 +454,39 @@ atan_else.2:
 	ret
 
 # lib.s
-	.text
-	.globl min_caml_create_array
+.text
+
+.globl min_caml_create_array
 min_caml_create_array:
-	mv	t5, a0
-	slli	t4, t5, 2
+	slli	t4, a0, 2
 create_array_loop:
-	bne	t5, zero, create_array_cont
-create_array_exit:
+	bne	a0, zero, create_array_cont
 	mv	a0, t0
 	add	t0, t0, t4
 	ret
 create_array_cont:
-	addi	t5, t5, -1
-	slli	t6, t5, 2
+	addi	a0, a0, -1
+	slli	t6, a0, 2
 	add	t6, t6, t0
 	sw	a1, 0(t6)
 	j	create_array_loop
 
-	.globl min_caml_create_float_array
+.globl min_caml_create_float_array
 min_caml_create_float_array:
-	mv	t5, a0
-	slli	t4, t5, 2
+	slli	t4, a0, 2
 create_float_array_loop:
-	bne	t5, zero, create_float_array_cont
-create_float_array_exit:
+	bne	a0, zero, create_float_array_cont
 	mv	a0, t0
 	add	t0, t0, t4
 	ret
 create_float_array_cont:
-	addi	t5, t5, -1
-	slli	t6, t5, 2
+	addi	a0, a0, -1
+	slli	t6, a0, 2
 	add	t6, t6, t0
 	fsw	fa0, 0(t6)
 	j	create_float_array_loop
 
-	.globl min_caml_fhalf
+.globl min_caml_fhalf
 min_caml_fhalf:
   lui t2, 258048
   fmv.s.w ft0, t2

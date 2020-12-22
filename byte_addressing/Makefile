@@ -1,8 +1,8 @@
 
 ALL_O = main.o instruction.o data.o labels.o parser.o fpu_wrap.o statistics.o execution.o assembler.o assembly.o
 
-god_float: $(ALL_O)
-	gcc -Wall -o god_float $(wildcard fpu/*.o) $(ALL_O) -lm
+god_byte: $(ALL_O)
+	gcc -Wall -o god_byte $(wildcard fpu/*.o) $(ALL_O) -lm
 
 main.o: main.c
 	gcc -Wall -c main.c
@@ -27,5 +27,5 @@ assembly.o: assembly.c
 	gcc -Wall -c assembly.c
 
 clean:
-	rm -f *.o god_float
+	rm -f *.o god_byte
 	cd fpu; make clean
