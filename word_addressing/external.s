@@ -208,7 +208,7 @@ create_array_loop:
 	ret
 create_array_cont:
 	sw	a1, 0(t1)
-  add	t1, t1, 1
+  addi	t1, t1, 1
 	j	create_array_loop
 
 .globl min_caml_create_float_array

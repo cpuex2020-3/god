@@ -209,7 +209,7 @@ create_array_loop:
 	ret
 create_array_cont:
 	sw	a1, 0(a0)
-  add	a0, a0, 4
+  addi	a0, a0, 4
 	j	create_array_loop
 
 .globl min_caml_create_float_array
