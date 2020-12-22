@@ -196,6 +196,43 @@ min_caml_truncate:
   fmv      fa0, ft1
   ret
 
+# others
+
+.globl min_caml_create_array
+min_caml_create_array:
+	slli	t1, a0, 2
+  mv	a0, t0
+	add	t0, a0, t1
+create_array_loop:
+	bne	a0, t0, create_array_cont
+	sub a0, t0, t1
+	ret
+create_array_cont:
+	sw	a1, 0(a0)
+  add	a0, a0, 4
+	j	create_array_loop
+
+.globl min_caml_create_float_array
+min_caml_create_float_array:
+	slli	t1, a0, 2
+  mv	a0, t0
+	add	t0, a0, t1
+create_float_array_loop:
+	bne	a0, t0, create_float_array_cont
+  sub a0, t0, t1
+	ret
+create_float_array_cont:
+	fsw	fa0, 0(a0)
+  addi	a0, a0, 4
+	j	create_float_array_loop
+
+.globl min_caml_fhalf
+min_caml_fhalf:
+  lui t2, 258048
+  fmv.s.w ft0, t2
+	fmul.s	fa0, fa0, ft0
+	ret
+
 
 # written by Joe Hattori
 
@@ -451,44 +488,4 @@ atan_else.2:
 	flw	ft1, 0(t2)
 	fsub.s	fa0, ft1, fa0
 	fsgnj.s	fa0, fa0, ft4
-	ret
-
-# lib.s
-.text
-
-.globl min_caml_create_array
-min_caml_create_array:
-	slli	t4, a0, 2
-create_array_loop:
-	bne	a0, zero, create_array_cont
-	mv	a0, t0
-	add	t0, t0, t4
-	ret
-create_array_cont:
-	addi	a0, a0, -1
-	slli	t6, a0, 2
-	add	t6, t6, t0
-	sw	a1, 0(t6)
-	j	create_array_loop
-
-.globl min_caml_create_float_array
-min_caml_create_float_array:
-	slli	t4, a0, 2
-create_float_array_loop:
-	bne	a0, zero, create_float_array_cont
-	mv	a0, t0
-	add	t0, t0, t4
-	ret
-create_float_array_cont:
-	addi	a0, a0, -1
-	slli	t6, a0, 2
-	add	t6, t6, t0
-	fsw	fa0, 0(t6)
-	j	create_float_array_loop
-
-.globl min_caml_fhalf
-min_caml_fhalf:
-  lui t2, 258048
-  fmv.s.w ft0, t2
-	fmul.s	fa0, fa0, ft0
 	ret

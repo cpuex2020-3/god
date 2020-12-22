@@ -72,7 +72,7 @@ int main(int argc, char *argv[]){
           return 0;
         }
         fprintf(stderr, "reverse assembled\n");
-        fprintf(stderr, "min_caml_start index   : %d\n", pc/4);
+        fprintf(stderr, "min_caml_start index   : %d\n", pc);
         output = output+1;
       }
       else if(op!=0&&argv[2][op]=='s'){
