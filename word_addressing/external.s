@@ -58,14 +58,14 @@ min_caml_print_int_hex:
   addi t3, zero, 10
   srl  a0, a0, t2
   andi a0, a0, 15
-  blt  a0, t3, 8
+  blt  a0, t3, 2
   addi a0, a0, 7
   addi a0, a0, 48
   txbu a0
-  beq  t2, zero, 16
+  beq  t2, zero, 4
   addi t2, t2, -4
   mv   a0, t1
-  jal  zero, -36
+  jal  zero, -9
   addi t1, zero, 10
   txbu t1
   ret
@@ -73,12 +73,12 @@ min_caml_print_int_hex:
 .globl min_caml_print_int
 min_caml_print_int:
   #negative
-  bge  a0, zero, 48
+  bge  a0, zero, 12
   addi t1, zero, 45
   txbu t1
   lui t1, -512695
   addi t1, t1, -1279
-  bge  a0, t1, 24
+  bge  a0, t1, 6
   lui t1, -488281
   addi t1, t1, -1024
   sub  a0, a0, t1
@@ -88,31 +88,31 @@ min_caml_print_int:
   #positive
   mod10 s2, a0
   div10 a0, a0
-  beq   a0, zero, 236
+  beq   a0, zero, 59
   mod10 s3, a0
   div10 a0, a0
-  beq   a0, zero, 208
+  beq   a0, zero, 52
   mod10 s4, a0
   div10 a0, a0
-  beq   a0, zero, 180
+  beq   a0, zero, 45
   mod10 s5, a0
   div10 a0, a0
-  beq   a0, zero, 152
+  beq   a0, zero, 38
   mod10 s6, a0
   div10 a0, a0
-  beq   a0, zero, 124
+  beq   a0, zero, 31
   mod10 s7, a0
   div10 a0, a0
-  beq   a0, zero, 96
+  beq   a0, zero, 24
   mod10 s8, a0
   div10 a0, a0
-  beq   a0, zero, 68
+  beq   a0, zero, 17
   mod10 s9, a0
   div10 a0, a0
-  beq   a0, zero, 40
+  beq   a0, zero, 10
   mod10 s10, a0
   div10 a0, a0
-  beq   a0, zero, 12
+  beq   a0, zero, 3
   addi  s11, a0, 48
   txbu  s11
   addi  s10, s10, 48
@@ -143,7 +143,7 @@ min_caml_int_of_float:
 	srli    t1, a0, 23
 	andi    t1, t1, 255  # 0x000000ff
 	addi    t1, t1, -126
-	bge     t1, zero, 12
+	bge     t1, zero, 3
 	addi    a0, zero, 0
 	ret
 	slti    t2, a0, 0
@@ -152,28 +152,28 @@ min_caml_int_of_float:
 	addi    t3, t3, 1
 	or	    a0, a0, t3
 	addi	  t1, t1, -23
-	bge	    t1, zero, 16
+	bge	    t1, zero, 4
 	sub	    t1, zero, t1
 	srl	    a0, a0, t1
-  jal     zero, 8
+  jal     zero, 2
 	sll	    a0, a0, t1
 	addi	  a0, a0, 1
 	srli	  a0, a0, 1
-	beq	    t2, zero, 8
+	beq	    t2, zero, 2
 	sub	    a0, zero, a0
 	ret
 
 .globl min_caml_floor
 min_caml_floor:
   fmv      ft0, fa0
-  sw	     a0, 4(s0)
-	sw	     ra, 8(s0)
-  addi	   s0, s0, 12
+  sw	     a0, 1(s0)
+	sw	     ra, 2(s0)
+  addi	   s0, s0, 3
 	jal	min_caml_int_of_float
   fcvt.s.w fa0, a0
-	addi	   s0, s0, -12
-  lw	     ra, 8(s0)
-	lw	     a0, 4(s0)
+	addi	   s0, s0, -3
+  lw	     ra, 2(s0)
+	lw	     a0, 1(s0)
   flt.s	   t1, ft0, fa0
   fcvt.s.w ft0, t1
   fsub.s	 fa0, fa0, ft0
@@ -183,15 +183,15 @@ min_caml_floor:
 min_caml_truncate:
   fmv      ft1, fa0
   fabs     fa0, fa0
-  sw	     ra, 4(s0)
-  addi	   s0, s0, 8
+  sw	     ra, 1(s0)
+  addi	   s0, s0, 2
   jal	min_caml_floor
   jal	min_caml_int_of_float
-  addi	   s0, s0, -8
-  lw	     ra, 4(s0)
+  addi	   s0, s0, -2
+  lw	     ra, 1(s0)
   fmv.s.w  fa0, zero
   flt.s	   t1, ft1, fa0
-  beq      t1, zero, 8
+  beq      t1, zero, 2
   sub   	 a0, zero, a0
   fmv      fa0, ft1
   ret
@@ -315,11 +315,11 @@ kernel_cos:
 min_caml_sin:
 	fsgnj.s	ft4, fa0, fa0
 	fsgnjx.s	fa0, fa0, fa0
-	sw	ra, 8(s0)
-	addi	s0, s0, 12
+	sw	ra, 2(s0)
+	addi	s0, s0, 3
 	jal	reduction
-	addi	s0, s0, -12
-	lw	ra, 8(s0)
+	addi	s0, s0, -3
+	lw	ra, 2(s0)
 	la	t6, l.pi
 	flw	ft0, 0(t6)
 	fle.s	t6, ft0, fa0
@@ -346,11 +346,11 @@ sin_else3:
 min_caml_cos:
 	fsgnjx.s	fa0, fa0, fa0
 	fsgnj.s	ft4, fa0, fa0
-	sw	ra, 8(s0)
-	addi	s0, s0, 12
+	sw	ra, 2(s0)
+	addi	s0, s0, 3
 	jal	reduction
-	addi	s0, s0, -12
-	lw	ra, 8(s0)
+	addi	s0, s0, -3
+	lw	ra, 2(s0)
 	la	t6, l.pi
 	flw	ft0, 0(t6)
 	fle.s	t3, ft0, fa0
@@ -428,11 +428,11 @@ atan_else.1:
 	fsub.s	fa0, ft3, ft2
 	fadd.s	ft2, ft3, ft2
 	fdiv.s	fa0, fa0, ft2
-	sw	ra, 4(s0)
-	addi	s0, s0, 8
+	sw	ra, 1(s0)
+	addi	s0, s0, 2
 	jal	kernel_atan
-	addi	s0, s0, -8
-	lw	ra, 4(s0)
+	addi	s0, s0, -2
+	lw	ra, 1(s0)
 	la	t2, l.qpi
 	flw	ft1, 0(t2)
 	fadd.s	fa0, fa0, ft1
@@ -442,11 +442,11 @@ atan_else.2:
 	la	t3, l.one
 	flw	ft2, 0(t3)
 	fdiv.s	fa0, ft2, ft3
-	sw	ra, 4(s0)
-	addi	s0, s0, 8
+	sw	ra, 1(s0)
+	addi	s0, s0, 2
 	jal	kernel_atan
-	addi	s0, s0, -8
-	lw	ra, 4(s0)
+	addi	s0, s0, -2
+	lw	ra, 1(s0)
 	la	t2, l.hpi
 	flw	ft1, 0(t2)
 	fsub.s	fa0, ft1, fa0

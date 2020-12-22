@@ -323,7 +323,7 @@ signed char execute(struct instruction instruction){
     int32_t rs1 = load_register(instruction.rs1_index, &indrs1);
     int32_t rs2 = load_register(instruction.rs2_index, &indrs2);
     if(indrs1>0||indrs2>0) return -1;
-    int32_t offset = 4;
+    int32_t offset = 1;
     // beq
     if(instruction.funct3==0b000){
       if(rs1==rs2) offset = instruction.imm;
