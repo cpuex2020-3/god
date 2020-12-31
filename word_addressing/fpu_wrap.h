@@ -9,5 +9,6 @@ int32_t fsqrt_s_wrap(int32_t rs1);
 int32_t fcvt_s_w_wrap(int32_t rs1);
 int32_t fle_s_wrap(int32_t rs1, int32_t rs2);
 int32_t flt_s_wrap(int32_t rs1, int32_t rs2);
+int32_t fhalf_wrap(int32_t rs1);
 
 #endif

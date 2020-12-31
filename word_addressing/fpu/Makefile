@@ -1,5 +1,5 @@
 
-all: reg_t.o fadd_s.o fsub_s.o fmul_s.o fdiv_s.o fsqrt_s.o fcvt_s_w.o flt_s.o fle_s.o
+all: reg_t.o fadd_s.o fsub_s.o fmul_s.o fdiv_s.o fsqrt_s.o fcvt_s_w.o flt_s.o fle_s.o fhalf.o
 
 reg_t.o: reg_t.c
 	gcc -Wall -c reg_t.c
@@ -19,6 +19,8 @@ flt_s.o: flt_s.c
 	gcc -Wall -c flt_s.c
 fle_s.o: fle_s.c
 	gcc -Wall -c fle_s.c
+fhalf.o: fhalf.c
+	gcc -Wall -c fhalf.c
 
 clean:
 	rm -f *.o
